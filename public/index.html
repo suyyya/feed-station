@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🍳 投喂站 · 每个人都有自己的食堂</title>
+<style>
+  :root{
+    --cream:#FFF7EC; --cream-2:#FFEFDC; --paper:#FFFDF8;
+    --peach:#FF8A5C; --peach-deep:#E96A3A;
+    --cocoa:#4A3128; --cocoa-soft:#8A6A5C;
+    --straw:#FF6B81; --berry:#5B8DEF; --pistachio:#7FB069;
+    --lemon:#F5B93D; --line:#F0DCC8;
+    --shadow:0 10px 30px rgba(201,111,74,.14);
+    --shadow-sm:0 4px 14px rgba(201,111,74,.12);
+    --r-lg:24px; --r-md:16px; --r-sm:10px;
+    --font-display:"Yuanti SC","YouYuan","STYuanti-SC","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    --font-body:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    --heat-0:#F1E4D3; --heat-1:#FFE0B8; --heat-2:#FFC08A; --heat-3:#FF9A5E; --heat-4:#E96A3A;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{
+    font-family:var(--font-body);color:var(--cocoa);
+    background:
+      radial-gradient(1200px 600px at 85% -10%, rgba(255,138,92,.16), transparent 60%),
+      radial-gradient(900px 500px at -10% 30%, rgba(245,185,61,.14), transparent 55%),
+      radial-gradient(700px 500px at 60% 110%, rgba(255,107,129,.10), transparent 55%),
+      var(--cream);
+    min-height:100vh;overflow-x:hidden;
+  }
+  .bg-fx{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+  .bg-fx span{position:absolute;font-size:28px;opacity:.15;animation:floaty 9s ease-in-out infinite}
+  @keyframes floaty{0%,100%{transform:translateY(0) rotate(-6deg)}50%{transform:translateY(-18px) rotate(8deg)}}
+
+  .wrap{position:relative;z-index:1;max-width:1080px;margin:0 auto;padding:28px 20px 70px}
+
+  /* ===== 招牌 ===== */
+  header{text-align:center;margin-bottom:22px}
+  .badge{display:inline-flex;align-items:center;gap:8px;background:var(--paper);border:2px dashed var(--peach);
+    color:var(--peach-deep);font-size:13px;font-weight:600;padding:6px 16px;border-radius:999px;margin-bottom:12px;
+    box-shadow:var(--shadow-sm);transform:rotate(-2deg)}
+  h1{font-family:var(--font-display);font-size:clamp(32px,5.5vw,48px);letter-spacing:2px;line-height:1.15}
+  h1 .plate{display:inline-block;animation:plate 6s ease-in-out infinite}
+  @keyframes plate{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(6deg)}}
+  .sub{color:var(--cocoa-soft);margin-top:10px;font-size:14.5px}
+  .user-bar{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:14px}
+  .me-chip{display:inline-flex;align-items:center;gap:7px;background:var(--paper);border:1.5px solid var(--line);
+    border-radius:999px;padding:7px 16px;font-size:14px;font-weight:700;box-shadow:var(--shadow-sm)}
+  .me-chip .logout{font-size:12px;color:var(--cocoa-soft);cursor:pointer;font-weight:600;border:none;background:none}
+  .me-chip .logout:hover{color:var(--peach-deep)}
+
+  /* ===== Tab ===== */
+  .tabs{display:flex;justify-content:center;gap:10px;margin-bottom:22px}
+  .tab{
+    border:none;cursor:pointer;font-family:var(--font-display);font-size:17px;
+    padding:11px 30px;border-radius:999px;background:var(--paper);color:var(--cocoa-soft);
+    border:2px solid var(--line);transition:all .25s cubic-bezier(.34,1.56,.64,1);
+  }
+  .tab:hover{transform:translateY(-2px)}
+  .tab.active{background:var(--peach);color:#fff;border-color:var(--peach-deep);box-shadow:0 8px 20px rgba(233,106,58,.35)}
+
+  .layout{display:grid;grid-template-columns:400px 1fr;gap:26px;align-items:start}
+  @media(max-width:900px){.layout{grid-template-columns:1fr}}
+
+  .panel{background:var(--paper);border-radius:var(--r-lg);box-shadow:var(--shadow);
+    border:1.5px solid var(--line);padding:22px;position:relative}
+  .panel-title{display:flex;align-items:center;gap:8px;font-family:var(--font-display);font-size:18px;margin-bottom:4px}
+  .panel-sub{font-size:12.5px;color:var(--cocoa-soft);margin-bottom:18px}
+
+  /* ===== 邀请码卡 ===== */
+  .invite-card{background:linear-gradient(135deg,#FFF3E2,#FFE9D2);border:2px dashed var(--peach);
+    border-radius:var(--r-md);padding:16px;margin-bottom:18px;position:relative}
+  .invite-card .ic-label{font-size:12px;font-weight:700;color:var(--cocoa-soft);margin-bottom:8px}
+  .invite-card .ic-code{display:flex;align-items:center;gap:10px}
+  .invite-card .ic-code .code{font-family:var(--font-display);font-size:30px;letter-spacing:6px;color:var(--peach-deep);font-weight:800}
+  .invite-card .ic-copy{border:none;background:var(--peach);color:#fff;font-size:12px;font-weight:700;
+    padding:7px 14px;border-radius:999px;cursor:pointer;transition:all .2s}
+  .invite-card .ic-copy:hover{background:var(--peach-deep)}
+  .invite-card .ic-hint{font-size:12px;color:var(--cocoa-soft);margin-top:10px;line-height:1.7}
+  .invite-card .ic-hint b{color:var(--peach-deep)}
+  .invite-card .ic-joined{margin-top:8px;font-size:12.5px;color:#4E6E3F;background:#EAF4E4;
+    border:1.5px dashed var(--pistachio);border-radius:10px;padding:8px 10px;line-height:1.7;display:none}
+  .join-btn{width:100%;border:2px dashed var(--berry);color:var(--berry);background:transparent;
+    font-size:14px;font-weight:700;padding:11px;border-radius:var(--r-md);cursor:pointer;transition:all .2s;margin-bottom:20px}
+  .join-btn:hover{background:#EEF4FF;transform:translateY(-1px)}
+
+  /* ===== 成员 ===== */
+  .menu-label{font-size:13px;font-weight:700;color:var(--cocoa-soft);margin:6px 0 10px;display:flex;align-items:center;gap:6px}
+  .members{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+  .member{
+    display:flex;align-items:center;gap:7px;padding:8px 14px;border-radius:999px;cursor:pointer;
+    background:#FFF1E3;border:2px solid transparent;font-size:14px;font-weight:600;
+    transition:all .22s cubic-bezier(.34,1.56,.64,1);user-select:none;
+  }
+  .member:hover{transform:translateY(-2px)}
+  .member .cnt{font-size:10.5px;color:var(--cocoa-soft);font-weight:700;background:#FFE8D2;border-radius:999px;padding:2px 8px}
+  .member.active{background:var(--peach);color:#fff;border-color:var(--peach-deep);box-shadow:0 6px 16px rgba(233,106,58,.35)}
+  .member.active .cnt{background:rgba(255,255,255,.28);color:#fff}
+  .no-member{font-size:13px;color:var(--cocoa-soft);background:#FFF6EA;border:1.5px dashed var(--line);
+    border-radius:var(--r-sm);padding:14px;text-align:center;line-height:1.8;margin-bottom:16px}
+  .no-member b{color:var(--peach-deep)}
+
+  /* ===== 点菜 ===== */
+  .menu{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+  .dish{display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 6px 10px;border-radius:var(--r-md);
+    cursor:pointer;background:#FFF6EA;border:2px solid var(--line);transition:all .22s cubic-bezier(.34,1.56,.64,1);position:relative}
+  .dish:hover{transform:translateY(-3px) rotate(-1.5deg);border-color:var(--peach)}
+  .dish .emoji{font-size:28px;line-height:1;filter:drop-shadow(0 3px 4px rgba(0,0,0,.08));transition:transform .25s}
+  .dish:hover .emoji{transform:scale(1.15) rotate(8deg)}
+  .dish .nm{font-size:12px;font-weight:700}
+  .dish .tg{font-size:10px;color:#fff;padding:1px 7px;border-radius:999px;font-weight:700}
+  .dish.selected{background:#FFF0DC;border-color:var(--peach);box-shadow:0 6px 16px rgba(233,106,58,.22)}
+  .dish.selected::after{content:"✓";position:absolute;top:-8px;right:-6px;width:20px;height:20px;background:var(--peach);
+    color:#fff;border-radius:50%;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;
+    box-shadow:0 3px 8px rgba(233,106,58,.4)}
+
+  .feed-box textarea{width:100%;min-height:100px;resize:vertical;border:2px solid var(--line);border-radius:var(--r-md);
+    background:#FFFBF4;padding:13px;font-family:var(--font-body);font-size:15px;color:var(--cocoa);outline:none;
+    transition:border-color .2s,box-shadow .2s;line-height:1.6}
+  .feed-box textarea:focus{border-color:var(--peach);box-shadow:0 0 0 4px rgba(255,138,92,.15)}
+  .ph-tip{font-size:12px;color:var(--cocoa-soft);margin-top:6px}
+
+  .attach-bar{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+  .attach-btn{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:600;color:var(--cocoa-soft);
+    border:1.5px dashed var(--line);background:#FFFBF4;padding:6px 12px;border-radius:999px;cursor:pointer;transition:all .2s}
+  .attach-btn:hover{border-color:var(--peach);color:var(--peach-deep);background:#FFF3E4}
+  .media-preview{margin-top:10px;position:relative;display:none;border-radius:var(--r-md);overflow:hidden;box-shadow:var(--shadow-sm)}
+  .media-preview img{width:100%;max-height:170px;object-fit:cover;display:block}
+  .media-preview .rm{position:absolute;top:8px;right:8px;width:26px;height:26px;border-radius:50%;
+    background:rgba(74,49,40,.65);color:#fff;border:none;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center}
+
+  .feed-btn{width:100%;margin-top:15px;border:none;cursor:pointer;background:linear-gradient(135deg,var(--peach),var(--peach-deep));
+    color:#fff;font-family:var(--font-display);font-size:19px;letter-spacing:4px;padding:14px;border-radius:999px;
+    box-shadow:0 10px 24px rgba(233,106,58,.38);transition:transform .2s cubic-bezier(.34,1.56,.64,1),box-shadow .2s;
+    position:relative;overflow:hidden}
+  .feed-btn:hover{transform:translateY(-3px);box-shadow:0 14px 30px rgba(233,106,58,.45)}
+  .feed-btn:active{transform:scale(.98)}
+  .feed-btn:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+  .feed-btn .shine{position:absolute;top:0;left:-60%;width:40%;height:100%;
+    background:linear-gradient(90deg,transparent,rgba(255,255,255,.45),transparent);transform:skewX(-20deg);animation:shine 2.8s ease-in-out infinite}
+  @keyframes shine{0%,60%{left:-60%}100%{left:130%}}
+
+  /* ===== 记录 ===== */
+  .log{display:flex;flex-direction:column;gap:14px;max-height:520px;overflow-y:auto;padding-right:4px}
+  .log::-webkit-scrollbar{width:6px}
+  .log::-webkit-scrollbar-thumb{background:var(--line);border-radius:99px}
+  .meal{background:#FFFBF4;border:1.5px solid var(--line);border-radius:var(--r-md);padding:14px 16px;position:relative;animation:mealIn .45s cubic-bezier(.34,1.56,.64,1)}
+  @keyframes mealIn{from{opacity:0;transform:translateY(-12px) scale(.96)}to{opacity:1;transform:none}}
+  .meal .top{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+  .meal .dish-emoji{font-size:23px;line-height:1;animation:dip 3s ease-in-out infinite;transform-origin:bottom center}
+  @keyframes dip{0%,100%{transform:rotate(0)}50%{transform:rotate(-10deg)}}
+  .meal .dish-name{font-weight:800;font-size:14px}
+  .meal .dish-tag{font-size:10px;color:#fff;padding:2px 8px;border-radius:999px;font-weight:700}
+  .meal .who{font-size:12px;color:var(--cocoa-soft);font-weight:600}
+  .meal .time{font-size:11px;color:var(--cocoa-soft);margin-left:auto}
+  .meal .content{font-size:14px;line-height:1.65;white-space:pre-wrap;word-break:break-word}
+  .meal .content a{color:var(--peach-deep);font-weight:600;text-decoration:none;border-bottom:1.5px dashed var(--peach)}
+  .meal .media{margin-top:10px;border-radius:var(--r-sm);overflow:hidden;max-width:260px;box-shadow:var(--shadow-sm)}
+  .meal .media img{width:100%;display:block;max-height:200px;object-fit:cover}
+  .meal .reaction{margin-top:10px;display:inline-flex;align-items:center;gap:6px;background:#EAF4E4;
+    border:1.5px dashed var(--pistachio);color:#4E6E3F;font-size:12.5px;font-weight:600;padding:5px 12px;border-radius:999px}
+  .meal .reaction .mouth{animation:nom 1.4s ease-in-out infinite;display:inline-block}
+  @keyframes nom{0%,100%{transform:scale(1)}50%{transform:scale(1.25) rotate(12deg)}}
+  .meal .ops{position:absolute;top:10px;right:10px;display:flex;gap:4px;opacity:0;transition:opacity .2s}
+  .meal:hover .ops{opacity:1}
+  .meal .ops button{border:none;background:#FFF1E3;color:var(--cocoa-soft);cursor:pointer;width:26px;height:26px;
+    border-radius:8px;font-size:13px;display:flex;align-items:center;justify-content:center;transition:background .15s}
+  .meal .ops button:hover{background:var(--peach);color:#fff}
+
+  .empty{text-align:center;padding:40px 20px;color:var(--cocoa-soft)}
+  .empty .big{font-size:48px;margin-bottom:10px;animation:emptyBob 3.2s ease-in-out infinite;display:inline-block}
+  @keyframes emptyBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+  .empty .t{font-weight:700;font-size:15.5px;color:var(--cocoa);margin-bottom:6px}
+  .empty .d{font-size:13px;line-height:1.7}
+
+  /* ===== 饭桌 ===== */
+  .dining-stats{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+  .stat{flex:1;min-width:90px;text-align:center;background:#FFF6EA;border:1.5px solid var(--line);border-radius:var(--r-md);padding:10px 8px}
+  .stat .num{font-family:var(--font-display);font-size:23px;color:var(--peach-deep);line-height:1.1}
+  .stat .lbl{font-size:11px;color:var(--cocoa-soft);font-weight:600;margin-top:2px}
+
+  .date-chip{display:inline-flex;align-items:center;gap:8px;background:#FFF1E3;border:1.5px solid var(--line);
+    border-radius:999px;padding:7px 14px;font-size:13.5px;font-weight:700;margin-bottom:14px}
+  .date-chip .back{border:none;background:var(--peach);color:#fff;font-size:11px;font-weight:700;
+    padding:4px 10px;border-radius:999px;cursor:pointer;display:none}
+  .date-chip .back.show{display:inline-block}
+
+  /* 热力图 */
+  .heat-card{background:#FFFBF4;border:1.5px solid var(--line);border-radius:var(--r-md);padding:16px;margin-bottom:18px}
+  .heat-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+  .heat-head .t{font-size:14px;font-weight:800}
+  .heat-head .t span{color:var(--cocoa-soft);font-weight:600;font-size:12px}
+  .heat-legend{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--cocoa-soft)}
+  .heat-legend i{width:11px;height:11px;border-radius:3px;display:inline-block}
+  .heat-scroll{overflow-x:auto;padding-bottom:6px}
+  .heat{display:grid;grid-template-rows:repeat(7,13px);grid-auto-flow:column;gap:3px;width:max-content}
+  .heat .cell{width:13px;height:13px;border-radius:3.5px;background:var(--heat-0);cursor:pointer;transition:transform .12s, box-shadow .12s}
+  .heat .cell:hover{transform:scale(1.35);box-shadow:0 0 0 2px var(--peach);position:relative;z-index:2}
+  .heat .cell.sel{outline:2px solid var(--peach-deep);outline-offset:1px}
+  .heat .cell.future{opacity:.25;cursor:default}
+  .heat .cell.l1{background:var(--heat-1)}
+  .heat .cell.l2{background:var(--heat-2)}
+  .heat .cell.l3{background:var(--heat-3)}
+  .heat .cell.l4{background:var(--heat-4)}
+  .heat-month{display:grid;grid-template-columns:repeat(53,13px);gap:3px;width:max-content;margin-top:4px;font-size:10px;color:var(--cocoa-soft);align-items:center;height:16px}
+  .heat-month .m{white-space:nowrap;overflow:visible;font-weight:700;line-height:1}
+
+  /* ===== 登录页 ===== */
+  .auth-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;position:relative;z-index:1}
+  .auth-card{background:var(--paper);border-radius:var(--r-lg);box-shadow:0 24px 60px rgba(201,111,74,.22);
+    border:1.5px solid var(--line);padding:34px 30px;width:100%;max-width:400px;animation:cardIn .5s cubic-bezier(.34,1.56,.64,1)}
+  @keyframes cardIn{from{opacity:0;transform:translateY(24px) scale(.95)}to{opacity:1;transform:none}}
+  .auth-card .logo{font-size:46px;text-align:center;animation:plate 5s ease-in-out infinite;display:block}
+  .auth-card h2{font-family:var(--font-display);text-align:center;font-size:24px;letter-spacing:2px;margin:8px 0 4px}
+  .auth-card .a-sub{text-align:center;font-size:12.5px;color:var(--cocoa-soft);margin-bottom:22px}
+  .field{margin-bottom:14px}
+  .field label{display:block;font-size:12.5px;font-weight:700;color:var(--cocoa-soft);margin-bottom:6px}
+  .field input[type=text],.field input[type=password]{width:100%;border:2px solid var(--line);border-radius:var(--r-sm);
+    background:#FFFBF4;padding:11px 14px;font-size:15px;color:var(--cocoa);outline:none;transition:border-color .2s}
+  .field input:focus{border-color:var(--peach);box-shadow:0 0 0 4px rgba(255,138,92,.12)}
+  .species{display:flex;gap:8px;flex-wrap:wrap}
+  .species .sp{flex:1;min-width:60px;text-align:center;padding:9px 4px;border-radius:var(--r-sm);background:#FFF6EA;
+    border:2px solid var(--line);cursor:pointer;transition:all .2s}
+  .species .sp .e{font-size:24px;display:block;margin-bottom:2px}
+  .species .sp .n{font-size:10.5px;font-weight:700;color:var(--cocoa-soft)}
+  .species .sp.sel{border-color:var(--peach);background:#FFF0DC;transform:scale(1.05)}
+  .species .sp.sel .n{color:var(--peach-deep)}
+  .a-btn{width:100%;border:none;cursor:pointer;background:linear-gradient(135deg,var(--peach),var(--peach-deep));color:#fff;
+    font-family:var(--font-display);font-size:18px;letter-spacing:3px;padding:14px;border-radius:999px;margin-top:6px;
+    box-shadow:0 10px 24px rgba(233,106,58,.35);transition:all .2s}
+  .a-btn:hover{transform:translateY(-2px)}
+  .a-switch{text-align:center;margin-top:16px;font-size:13.5px;color:var(--cocoa-soft)}
+  .a-switch a{color:var(--peach-deep);font-weight:700;cursor:pointer;text-decoration:none;border-bottom:1.5px dashed var(--peach)}
+  .a-err{background:#FDECEC;border:1.5px solid #F0B4B4;color:#B05252;font-size:13px;border-radius:var(--r-sm);
+    padding:10px 14px;margin-bottom:14px;display:none;line-height:1.6}
+
+  /* ===== 弹窗 ===== */
+  .overlay{position:fixed;inset:0;z-index:1000;background:rgba(74,49,40,.45);backdrop-filter:blur(4px);
+    display:none;align-items:center;justify-content:center;padding:20px}
+  .overlay.show{display:flex;animation:fadeIn .25s ease}
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+  .modal{background:var(--paper);border-radius:var(--r-lg);padding:26px;width:100%;max-width:420px;
+    box-shadow:0 24px 60px rgba(74,49,40,.3);animation:modalIn .35s cubic-bezier(.34,1.56,.64,1)}
+  @keyframes modalIn{from{opacity:0;transform:translateY(24px) scale(.94)}to{opacity:1;transform:none}}
+  .modal h3{font-family:var(--font-display);font-size:20px;margin-bottom:16px}
+  .modal-btns{display:flex;gap:10px;margin-top:18px}
+  .modal-btns button{flex:1;border:none;cursor:pointer;border-radius:999px;padding:12px;font-size:15px;font-weight:700}
+  .btn-ghost{background:#FFF1E3;color:var(--cocoa-soft)}
+  .btn-ghost:hover{background:#FFE8D2}
+  .btn-main{background:var(--peach);color:#fff;box-shadow:0 6px 16px rgba(233,106,58,.35)}
+  .btn-main:hover{background:var(--peach-deep)}
+
+  .ticket{background:#FFFDF8;border:2px dashed var(--peach);border-radius:18px;padding:24px 22px;text-align:center;position:relative}
+  .ticket .t-head{font-family:var(--font-display);font-size:22px;letter-spacing:2px;color:var(--peach-deep)}
+  .ticket .t-sub{font-size:11.5px;color:var(--cocoa-soft);margin:4px 0 14px;letter-spacing:1px}
+  .ticket .t-divider{border-top:1.5px dashed var(--line);margin:12px 0}
+  .ticket .t-dish{font-size:38px;margin-bottom:6px}
+  .ticket .t-name{font-size:17px;font-weight:800}
+  .ticket .t-tag{display:inline-block;font-size:10.5px;color:#fff;padding:2px 10px;border-radius:999px;font-weight:700;margin-top:6px}
+  .ticket .t-content{background:#FFF6EA;border-radius:var(--r-sm);padding:12px;margin-top:12px;font-size:14px;line-height:1.7;
+    text-align:left;white-space:pre-wrap;word-break:break-word;max-height:180px;overflow-y:auto}
+  .ticket .t-foot{font-size:12px;color:var(--cocoa-soft);margin-top:14px;line-height:1.8}
+  .ticket .t-foot b{color:var(--cocoa)}
+
+  .toast{position:fixed;left:50%;bottom:36px;transform:translateX(-50%) translateY(20px);background:var(--cocoa);color:#fff;
+    padding:12px 22px;border-radius:999px;font-size:14px;font-weight:600;opacity:0;pointer-events:none;
+    transition:all .35s cubic-bezier(.34,1.56,.64,1);z-index:1200;box-shadow:0 10px 24px rgba(0,0,0,.25);max-width:86vw;text-align:center}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  footer{text-align:center;margin-top:40px;color:var(--cocoa-soft);font-size:12.5px;line-height:2}
+  footer .sig{font-family:var(--font-display);color:var(--peach-deep);font-size:13px}
+
+  .flying{position:fixed;z-index:999;font-size:42px;pointer-events:none;filter:drop-shadow(0 6px 10px rgba(0,0,0,.2));
+    transition:transform .85s cubic-bezier(.34,.7,.3,1),opacity .85s;will-change:transform}
+  .gulp-bubble{position:fixed;z-index:998;pointer-events:none;background:#fff;border:2px solid var(--peach);border-radius:16px;
+    padding:8px 14px;font-size:14px;font-weight:700;color:var(--cocoa);box-shadow:var(--shadow);animation:gulpPop .9s ease forwards}
+  @keyframes gulpPop{0%{opacity:0;transform:translateY(10px) scale(.6)}15%{opacity:1;transform:translateY(0) scale(1.1)}30%{transform:scale(1)}75%{opacity:1}100%{opacity:0;transform:translateY(-22px) scale(.9)}}
+  .friend-avatar-big{position:fixed;z-index:997;pointer-events:none;font-size:52px;animation:chomp 1s ease forwards}
+  @keyframes chomp{0%{transform:scale(1)}25%{transform:scale(1.18) rotate(-8deg)}45%{transform:scale(.94) rotate(6deg)}65%{transform:scale(1.08) rotate(-3deg)}100%{transform:scale(1)}}
+  .heart-pop{position:fixed;z-index:998;pointer-events:none;font-size:24px;animation:heartFly 1.3s ease-out forwards}
+  @keyframes heartFly{0%{opacity:0;transform:translateY(0) scale(.4)}20%{opacity:1;transform:scale(1.2)}100%{opacity:0;transform:translateY(-46px) scale(.8)}}
+</style>
+</head>
+<body>
+
+<div class="bg-fx" aria-hidden="true">
+  <span style="top:8%;left:6%;animation-delay:0s">🍽️</span>
+  <span style="top:16%;right:9%;animation-delay:1.6s">🥄</span>
+  <span style="top:58%;left:3%;animation-delay:.8s">✨</span>
+  <span style="top:70%;right:5%;animation-delay:2.2s">🍃</span>
+  <span style="top:38%;left:92%;animation-delay:.4s">🫧</span>
+  <span style="top:88%;left:14%;animation-delay:2.8s">🥢</span>
+</div>
+
+<!-- ===== 登录/注册 ===== -->
+<div class="auth-screen" id="authScreen">
+  <div class="auth-card">
+    <span class="logo">🍳</span>
+    <h2>投喂站</h2>
+    <div class="a-sub" id="aSub">老朋友回来了，还是第一次来开食堂？</div>
+    <div class="a-err" id="aErr"></div>
+    <div class="field">
+      <label>名字（朋友的称呼）</label>
+      <input type="text" id="aName" maxlength="12" placeholder="比如：派派">
+    </div>
+    <div class="field">
+      <label>密码</label>
+      <input type="password" id="aPass" placeholder="至少 4 位">
+    </div>
+    <div class="field" id="spField" style="display:none">
+      <label>你像什么小动物？</label>
+      <div class="species" id="aSpecies"></div>
+    </div>
+    <button class="a-btn" id="aBtn">🍚 进来干饭</button>
+    <div class="a-switch" id="aSwitch">第一次来？<a>开一个自己的投喂站 →</a></div>
+  </div>
+</div>
+
+<!-- ===== 主界面 ===== -->
+<div class="wrap" id="app" hidden>
+  <header>
+    <div class="badge">🍳 今日食堂 · 营业中</div>
+    <h1><span class="plate">🍚</span> 投喂站 <span class="plate">🥢</span></h1>
+    <p class="sub">把<strong>夸奖</strong>做成糖、把<strong>吐槽</strong>做成辣椒、把<strong>八卦</strong>做成西瓜 —— 用心意喂饱朋友 🧡</p>
+    <div class="user-bar">
+      <span class="me-chip" id="meChip"></span>
+    </div>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" id="tabStation">🍳 我的投喂站</button>
+    <button class="tab" id="tabTable">🪑 我的饭桌</button>
+  </div>
+
+  <!-- ===== Tab1 我的投喂站 ===== -->
+  <section id="stationTab">
+    <div class="invite-card">
+      <div class="ic-label">🔑 我的邀请码</div>
+      <div class="ic-code">
+        <span class="code" id="myCode">------</span>
+        <button class="ic-copy" id="copyCode">复制</button>
+      </div>
+      <div class="ic-hint">把邀请码发给朋友，ta 凭码加入后，<b>你就能投喂 ta 啦</b>。想被 ta 喂？让 ta 也发你一个码～</div>
+      <div class="ic-joined" id="joinedBox"></div>
+    </div>
+
+    <button class="join-btn" id="openJoin">🔗 加入朋友的投喂站（输入 ta 的邀请码）</button>
+
+    <div class="panel">
+      <div class="panel-title">👩‍🍳 我的干饭人</div>
+      <div class="panel-sub">选一位，做一道菜喂过去</div>
+      <div class="members" id="memberRow"></div>
+      <div class="menu-label">🍳 今天想喂点什么？</div>
+      <div class="menu" id="menu"></div>
+      <div class="feed-box">
+        <textarea id="feedText" placeholder="先在上面选一道菜…"></textarea>
+        <div class="ph-tip" id="feedTip">💡 想到啥喂啥，不用太正式</div>
+      </div>
+      <div class="attach-bar">
+        <label class="attach-btn" for="photoInput">📷 投喂照片</label>
+        <input type="file" id="photoInput" accept="image/*" hidden>
+      </div>
+      <div class="media-preview" id="mediaPreview"></div>
+      <button class="feed-btn" id="feedBtn" disabled><span class="shine"></span>🍴 开喂！</button>
+    </div>
+
+    <div class="panel" style="margin-top:26px">
+      <div class="panel-title">📜 我喂过的</div>
+      <div class="panel-sub">最近的投喂记录</div>
+      <div class="log" id="myLog"></div>
+    </div>
+  </section>
+
+  <!-- ===== Tab2 我的饭桌 ===== -->
+  <section id="tableTab" hidden>
+    <div class="panel">
+      <div class="panel-title">🪑 我的饭桌</div>
+      <div class="panel-sub" id="tableSub">朋友们喂来的每一口，都记在这里</div>
+
+      <div class="dining-stats">
+        <div class="stat"><div class="num" id="statToday">0</div><div class="lbl">今日被投喂</div></div>
+        <div class="stat"><div class="num" id="statTotal">0</div><div class="lbl">累计被投喂</div></div>
+        <div class="stat"><div class="num" id="statFeeders">0</div><div class="lbl">喂过我的人</div></div>
+      </div>
+
+      <div class="heat-card">
+        <div class="heat-head">
+          <div class="t">🔥 被投喂热度 <span>（近一年 · 点格子看那天）</span></div>
+          <div class="heat-legend">少 <i style="background:var(--heat-0)"></i><i style="background:var(--heat-1)"></i><i style="background:var(--heat-2)"></i><i style="background:var(--heat-3)"></i><i style="background:var(--heat-4)"></i> 多</div>
+        </div>
+        <div class="heat-scroll"><div class="heat" id="heatGrid"></div><div class="heat-month" id="heatMonths"></div></div>
+      </div>
+
+      <div class="date-chip" id="dateChip"><span id="dateLabel">今天</span><button class="back" id="backToday">回今天</button></div>
+      <div class="log" id="tableLog"></div>
+    </div>
+  </section>
+
+  <footer>
+    <div>做菜的人是<b>饲养员</b>，被喂的人是<b>干饭人</b> —— 被惦记，就是最香的一口 🍜</div>
+    <div class="sig">🍳 投喂站 · 用心意喂饱每一个重要的人</div>
+  </footer>
+</div>
+
+<!-- 加入弹窗 -->
+<div class="overlay" id="joinModal">
+  <div class="modal">
+    <h3>🔗 加入朋友的投喂站</h3>
+    <div class="field">
+      <label>朋友的邀请码（6 位）</label>
+      <input type="text" id="joinCode" maxlength="6" placeholder="如：K7M2PX" style="width:100%;border:2px solid var(--line);border-radius:var(--r-sm);background:#FFFBF4;padding:11px 14px;font-size:17px;letter-spacing:4px;text-align:center;text-transform:uppercase;outline:none">
+    </div>
+    <div class="ph-tip" style="margin-bottom:8px">💡 加入后你就是 ta 投喂站的干饭人，ta 能投喂你；ta 喂的都会出现在你的饭桌</div>
+    <div class="modal-btns">
+      <button class="btn-ghost" id="cancelJoin">再想想</button>
+      <button class="btn-main" id="doJoin">上桌！</button>
+    </div>
+  </div>
+</div>
+
+<!-- 小票弹窗 -->
+<div class="overlay" id="ticketModal">
+  <div class="modal" style="max-width:380px">
+    <div class="ticket" id="ticketBody"></div>
+    <div class="modal-btns">
+      <button class="btn-ghost" id="closeTicket">收好</button>
+      <button class="btn-main" id="copyTicket">📋 复制小票</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ================= 工具 ================= */
+const $ = s => document.querySelector(s);
+
+/* ================= 数据与配置 ================= */
+const SPECIES = [
+  {e:'🐱',n:'小猫咪'},{e:'🐶',n:'柴犬'},{e:'🐰',n:'兔子'},{e:'🐻',n:'小熊'},
+  {e:'🐷',n:'小猪'},{e:'🐸',n:'青蛙'},{e:'🐼',n:'熊猫'},{e:'🍚',n:'干饭人'},
+];
+const FOODS = [
+  {id:'gossip',name:'八卦',emoji:'🍉',tag:'有料',color:'#FF6B81',ph:'比如：听说有人昨天…',tip:'瓜要保熟，记得补充细节'},
+  {id:'praise',name:'夸奖',emoji:'🍬',tag:'甜甜的',color:'#F5B93D',ph:'夸就完事了！',tip:'彩虹屁也行，真心的更好'},
+  {id:'compliment',name:'赞美',emoji:'🍓',tag:'高甜',color:'#FF8A5C',ph:'一句走心的赞美…',tip:'赞美要具体，效果翻倍'},
+  {id:'rant',name:'工作吐槽',emoji:'🌶️',tag:'火辣',color:'#E85D4A',ph:'今天又怎么了？倒出来吧…',tip:'吐槽不是负能量，是信任'},
+  {id:'joke',name:'冷笑话',emoji:'🧊',tag:'透心凉',color:'#5B8DEF',ph:'讲个冷笑话…',tip:'越冷越好，冻住才算赢'},
+  {id:'photo',name:'照片',emoji:'📷',tag:'现烤',color:'#7FB069',ph:'配上一句话，或者什么都不说…',tip:'选一张照片，新鲜出炉'},
+  {id:'link',name:'链接',emoji:'🍔',tag:'夹心',color:'#B98AE0',ph:'贴个链接，顺便说句这是啥…',tip:'好东西要配食用说明'},
+  {id:'file',name:'文件',emoji:'🍱',tag:'管饱',color:'#C98A3D',ph:'传个文件，附上一句使用说明…',tip:'豪华便当，慢慢消化'},
+];
+
+const S = {
+  token: localStorage.getItem('fs_token') || null,
+  me: null, members: [], joined: [],
+  myFeeds: [], tableFeeds: [],
+  tab: 'station', curFood: null, curMember: null,
+  attach: null, selDate: null, ticketId: null,
+};
+let authMode = 'login';
+let authSp = '🐶';
+
+/* ================= API ================= */
+async function api(path, opt = {}) {
+  const headers = { 'Content-Type': 'application/json' };
+  if (S.token) headers.Authorization = 'Bearer ' + S.token;
+  const res = await fetch(path, { ...opt, headers });
+  const data = await res.json().catch(() => ({}));
+  if (res.status === 401 && path !== '/api/login' && path !== '/api/register') {
+    logout();
+    throw new Error(data.error || '登录过期');
+  }
+  if (!res.ok) throw new Error(data.error || '出错了');
+  return data;
+}
+
+/* ================= 登录 ================= */
+function renderAuthSpecies() {
+  const box = $('#aSpecies');
+  box.innerHTML = '';
+  SPECIES.forEach(sp => {
+    const el = document.createElement('div');
+    el.className = 'sp' + (sp.e === authSp ? ' sel' : '');
+    el.innerHTML = `<span class="e">${sp.e}</span><span class="n">${sp.n}</span>`;
+    el.onclick = () => { authSp = sp.e; renderAuthSpecies(); };
+    box.appendChild(el);
+  });
+}
+function setAuthMode(m) {
+  authMode = m;
+  const isReg = m === 'register';
+  $('#spField').style.display = isReg ? 'block' : 'none';
+  $('#aBtn').textContent = isReg ? '🎉 开张！' : '🍚 进来干饭';
+  $('#aSub').textContent = isReg ? '开一家自己的投喂站，等你的人来' : '老朋友回来了，还是第一次来开食堂？';
+  $('#aSwitch').innerHTML = isReg ? '已经有投喂站了？<a>直接登录 →</a>' : '第一次来？<a>开一个自己的投喂站 →</a>';
+}
+function showAuthErr(msg) {
+  const el = $('#aErr');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+$('#aSwitch').addEventListener('click', () => setAuthMode(authMode === 'login' ? 'register' : 'login'));
+$('#aBtn').addEventListener('click', async () => {
+  const name = $('#aName').value.trim();
+  const pass = $('#aPass').value;
+  if (!name) return showAuthErr('先告诉我你叫什么嘛');
+  if (!pass) return showAuthErr('密码不能为空');
+  try {
+    const path = authMode === 'register' ? '/api/register' : '/api/login';
+    const body = authMode === 'register' ? { name, pass, sp: authSp } : { name, pass };
+    const data = await api(path, { method: 'POST', body: JSON.stringify(body) });
+    S.token = data.token;
+    localStorage.setItem('fs_token', data.token);
+    await initApp();
+  } catch (e) { showAuthErr(e.message); }
+});
+$('#aPass').addEventListener('keydown', e => { if (e.key === 'Enter') $('#aBtn').click(); });
+$('#aName').addEventListener('keydown', e => { if (e.key === 'Enter') $('#aBtn').click(); });
+
+function logout() {
+  S.token = null;
+  localStorage.removeItem('fs_token');
+  $('#app').hidden = true;
+  $('#authScreen').style.display = 'flex';
+  $('#aPass').value = '';
+  setAuthMode('login');
+}
+
+/* ================= 初始化 ================= */
+async function initApp() {
+  $('#authScreen').style.display = 'none';
+  $('#app').hidden = false;
+  await refreshAll();
+}
+
+async function refreshAll() {
+  try {
+    const [meData, feedsData, tableData] = await Promise.all([
+      api('/api/me'), api('/api/feeds'), api('/api/table'),
+    ]);
+    S.me = meData.user;
+    S.members = meData.members;
+    S.joined = meData.joined;
+    S.myFeeds = feedsData.feeds;
+    S.tableFeeds = tableData.feeds;
+    if (!S.curMember || !S.members.some(m => m.id === S.curMember)) S.curMember = S.members[0]?.id || null;
+    renderAll();
+  } catch (e) { toast(e.message); }
+}
+
+/* ================= 渲染 ================= */
+const esc = s => s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const linkify = s => s.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
+const fmtTime = ts => { const d = new Date(ts); const p = n => String(n).padStart(2,'0'); return `${p(d.getHours())}:${p(d.getMinutes())}`; };
+const dateKeyOf = d => `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
+const todayKeyStr = () => dateKeyOf(new Date());
+
+function renderAll() {
+  if (!S.me) return;
+  $('#meChip').innerHTML = `${S.me.sp} ${esc(S.me.name)} <button class="logout">退出</button>`;
+  $('#meChip').querySelector('.logout').onclick = logout;
+  $('#myCode').textContent = S.me.inviteCode;
+  renderJoinedBox();
+  renderMembers();
+  renderMenu();
+  renderMyLog();
+  renderTable();
+  updateTip();
+  checkCanFeed();
+}
+
+function renderJoinedBox() {
+  const box = $('#joinedBox');
+  if (!S.joined.length) { box.style.display = 'none'; return; }
+  box.style.display = 'block';
+  box.innerHTML = '✅ 你已经是 <b>' + S.joined.map(j => j.ownerSp + ' ' + esc(j.ownerName)).join('、') + '</b> 的投喂站干饭人，ta 们喂的菜都在这张饭桌上';
+}
+
+function renderMembers() {
+  const row = $('#memberRow');
+  row.innerHTML = '';
+  if (!S.members.length) {
+    row.innerHTML = `<div class="no-member">干饭人还空着……<br>把上面 🔑 邀请码发给朋友，<b>ta 加入后你就能喂 ta 啦</b></div>`;
+    return;
+  }
+  S.members.forEach(m => {
+    const el = document.createElement('div');
+    el.className = 'member' + (m.id === S.curMember ? ' active' : '');
+    el.innerHTML = `<span>${m.sp}</span><span>${esc(m.name)}</span><span class="cnt">已喂 ${m.count} 口</span>`;
+    el.onclick = () => { S.curMember = m.id; renderMembers(); };
+    row.appendChild(el);
+  });
+}
+
+function renderMenu() {
+  const menu = $('#menu');
+  menu.innerHTML = '';
+  FOODS.forEach(fd => {
+    const d = document.createElement('div');
+    d.className = 'dish' + (S.curFood === fd.id ? ' selected' : '');
+    d.innerHTML = `<span class="emoji">${fd.emoji}</span><span class="nm">${fd.name}</span><span class="tg" style="background:${fd.color}">${fd.tag}</span>`;
+    d.onclick = () => { S.curFood = fd.id; renderMenu(); updateTip(); };
+    menu.appendChild(d);
+  });
+}
+
+function updateTip() {
+  const fd = FOODS.find(f => f.id === S.curFood);
+  const ta = $('#feedText');
+  if (fd) { ta.placeholder = fd.ph; $('#feedTip').textContent = '💡 ' + fd.tip; }
+  checkCanFeed();
+}
+
+function checkCanFeed() {
+  const hasText = $('#feedText').value.trim().length > 0;
+  const ok = S.curFood && S.curMember && (hasText || S.attach);
+  $('#feedBtn').disabled = !ok;
+}
+
+function mealCard(m, opts = {}) {
+  const fd = FOODS.find(f => f.id === m.foodId) || FOODS[0];
+  let content = '';
+  if (m.media?.type === 'image') content += `<div class="media"><img src="${m.media.url}" alt="投喂的照片"></div>`;
+  if (m.text) content += `<div class="content">${linkify(esc(m.text))}</div>`;
+  const who = opts.who ? `<span class="who">${opts.who}</span>` : '';
+  return `<div class="meal" data-id="${m.id}">
+    <div class="ops">
+      <button class="share" title="生成投喂小票">🧾</button>
+      <button class="del" title="撤下这盘菜">🗑️</button>
+    </div>
+    <div class="top">
+      <span class="dish-emoji">${fd.emoji}</span>
+      <span class="dish-name">${fd.name}</span>
+      <span class="dish-tag" style="background:${fd.color}">${fd.tag}</span>
+      ${who}
+      <span class="time">${fmtTime(m.ts)}</span>
+    </div>
+    ${content}
+    <div class="reaction"><span class="mouth">😋</span> ${esc(m.reaction)}</div>
+  </div>`;
+}
+
+function bindMealOps(container, feeds) {
+  container.querySelectorAll('.meal').forEach(el => {
+    const id = el.dataset.id;
+    const m = feeds.find(f => f.id === id);
+    el.querySelector('.share').onclick = () => openTicket(id, m);
+    el.querySelector('.del').onclick = async () => {
+      if (!confirm('撤下这盘菜？')) return;
+      try {
+        await api('/api/feed/' + id, { method: 'DELETE' });
+        toast('这道菜撤下桌了 🍽️');
+        refreshAll();
+      } catch (e) { toast(e.message); }
+    };
+  });
+}
+
+function renderMyLog() {
+  const log = $('#myLog');
+  if (!S.myFeeds.length) {
+    log.innerHTML = `<div class="empty"><span class="big">🥡</span><div class="t">还没喂过任何人</div><div class="d">先邀请朋友加入，<br>然后亲手做第一道菜吧～</div></div>`;
+    return;
+  }
+  log.innerHTML = S.myFeeds.slice(0, 30).map(m => mealCard(m, { who: `→ ${m.memberSp} ${esc(m.memberName)}` })).join('');
+  bindMealOps(log, S.myFeeds);
+}
+
+/* ================= 饭桌 ================= */
+function renderTable() {
+  if (!S.me) return;
+  const today = todayKeyStr();
+  if (!S.selDate) S.selDate = today;
+  const day = S.selDate;
+
+  const dayFeeds = S.tableFeeds.filter(f => f.dateKey === day);
+  const todayFeeds = S.tableFeeds.filter(f => f.dateKey === today);
+  const feeders = new Set(S.tableFeeds.map(f => f.ownerId)).size;
+
+  $('#statToday').textContent = todayFeeds.length;
+  $('#statTotal').textContent = S.tableFeeds.length;
+  $('#statFeeders').textContent = feeders;
+  $('#tableSub').textContent = S.tableFeeds.length ? '朋友们喂来的每一口，都记在这里' : '饭桌还空着——去「我的投喂站」把邀请码发给朋友吧';
+
+  // 日期 chip
+  const isToday = day === today;
+  $('#dateLabel').textContent = isToday ? '📅 今天' : fmtDay(day);
+  $('#backToday').classList.toggle('show', !isToday);
+
+  // 列表
+  const log = $('#tableLog');
+  if (!dayFeeds.length) {
+    log.innerHTML = `<div class="empty"><span class="big">${isToday ? '🍽️' : '📭'}</span><div class="t">${isToday ? '今天还没人喂你' : '这天没人投喂'}</div><div class="d">${isToday ? '把邀请码发给朋友，<br>等着被投喂吧～' : '点热力图上的格子，看看别的日子'}</div></div>`;
+  } else {
+    log.innerHTML = dayFeeds.map(m => mealCard(m, { who: `← ${m.feederSp} ${esc(m.feederName)} 喂的` })).join('');
+    bindMealOps(log, S.tableFeeds);
+  }
+
+  drawHeatmap();
+}
+
+function fmtDay(key) {
+  const [y, m, d] = key.split('-').map(Number);
+  return `${y}年${m}月${d}日`;
+}
+
+function drawHeatmap() {
+  const grid = $('#heatGrid');
+  const counts = {};
+  S.tableFeeds.forEach(f => { counts[f.dateKey] = (counts[f.dateKey] || 0) + 1; });
+
+  const today = new Date();
+  const start = new Date(today);
+  start.setDate(start.getDate() - 364);
+  start.setDate(start.getDate() - start.getDay()); // 对齐到周日
+
+  let cells = '';
+  const monthMarks = {};
+  const d = new Date(start);
+  for (let w = 0; w < 53; w++) {
+    for (let i = 0; i < 7; i++) {
+      const key = dateKeyOf(d);
+      const isFuture = d > today;
+      const c = counts[key] || 0;
+      const lv = isFuture ? '' : c === 0 ? '' : c <= 1 ? 'l1' : c <= 3 ? 'l2' : c <= 6 ? 'l3' : 'l4';
+      const sel = key === S.selDate ? ' sel' : '';
+      const future = isFuture ? ' future' : '';
+      const title = `${key} · ${c} 口`;
+      cells += `<div class="cell ${lv}${sel}${future}" data-key="${key}" title="${title}"></div>`;
+      if (d.getDate() === 1) monthMarks[w] = (d.getMonth() + 1) + '月';
+      d.setDate(d.getDate() + 1);
+    }
+  }
+  grid.innerHTML = cells;
+  let months = '';
+  for (let w = 0; w < 53; w++) months += `<div class="m">${monthMarks[w] || ''}</div>`;
+  $('#heatMonths').innerHTML = months;
+
+  grid.querySelectorAll('.cell').forEach(cell => {
+    cell.onclick = () => {
+      S.selDate = cell.dataset.key;
+      renderTable();
+    };
+  });
+}
+
+/* ================= 投喂 ================= */
+async function feed() {
+  if (!S.curFood || !S.curMember) return;
+  const member = S.members.find(m => m.id === S.curMember);
+  if (!member) return toast('先选一位干饭人');
+  const fd = FOODS.find(f => f.id === S.curFood);
+  const text = $('#feedText').value.trim();
+  if (!text && !S.attach) return;
+
+  const btn = $('#feedBtn');
+  btn.disabled = true;
+  try {
+    let mediaUrl = null;
+    if (S.attach) {
+      const up = await api('/api/media', { method: 'POST', body: JSON.stringify({ data: S.attach }) });
+      mediaUrl = up.url;
+    }
+    const data = await api('/api/feed', { method: 'POST', body: JSON.stringify({ memberId: member.id, foodId: S.curFood, text, mediaUrl }) });
+    $('#feedText').value = '';
+    clearAttach();
+    flyAndEat(fd, member, data.meal);
+    await refreshAll();
+    toast(`🍴 投喂成功！${member.name} 吃到了一口${fd.name}`);
+  } catch (e) { toast(e.message); }
+  btn.disabled = false;
+}
+
+function flyAndEat(fd, member, meal) {
+  const btn = $('#feedBtn');
+  const rect = btn.getBoundingClientRect();
+  const from = { x: rect.left + rect.width / 2, y: rect.top };
+
+  // 落点：成员头像（投喂台下方区域）
+  const memberEl = [...document.querySelectorAll('.member')].find(el => el.textContent.includes(member.name)) || btn;
+  const mr = memberEl.getBoundingClientRect();
+  const to = { x: mr.left + mr.width / 2, y: mr.top };
+
+  const fly = document.createElement('div');
+  fly.className = 'flying';
+  fly.textContent = fd.emoji;
+  fly.style.left = from.x + 'px';
+  fly.style.top = from.y + 'px';
+  document.body.appendChild(fly);
+
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    const dx = to.x - from.x, dy = to.y - from.y;
+    fly.style.transform = `translate(${dx}px, ${dy}px) rotate(${dx > 0 ? 180 : -180}deg) scale(.55)`;
+    fly.style.opacity = '.9';
+  }));
+
+  setTimeout(() => {
+    fly.remove();
+    const gulp = document.createElement('div');
+    gulp.className = 'friend-avatar-big';
+    gulp.textContent = member.sp;
+    gulp.style.left = (to.x - 24) + 'px';
+    gulp.style.top = (to.y - 28) + 'px';
+    document.body.appendChild(gulp);
+    setTimeout(() => gulp.remove(), 1000);
+
+    const bubble = document.createElement('div');
+    bubble.className = 'gulp-bubble';
+    bubble.textContent = meal.reaction;
+    bubble.style.left = (to.x + 30) + 'px';
+    bubble.style.top = (to.y - 44) + 'px';
+    document.body.appendChild(bubble);
+    setTimeout(() => bubble.remove(), 950);
+
+    for (let i = 0; i < 3; i++) {
+      const h = document.createElement('div');
+      h.className = 'heart-pop';
+      h.textContent = ['💛', '✨', '🫶'][i];
+      h.style.left = (to.x + 16 + i * 24) + 'px';
+      h.style.top = (to.y - 18) + 'px';
+      h.style.animationDelay = (i * 0.15) + 's';
+      document.body.appendChild(h);
+      setTimeout(() => h.remove(), 1600);
+    }
+  }, 850);
+}
+
+/* ================= 附件 ================= */
+function clearAttach() {
+  S.attach = null;
+  $('#mediaPreview').style.display = 'none';
+  $('#mediaPreview').innerHTML = '';
+}
+$('#photoInput').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (file.size > 8 * 1024 * 1024) { toast('照片太大啦，换张小的（8MB 以内）'); return; }
+  compressImage(file).then(data => {
+    S.attach = data;
+    const pv = $('#mediaPreview');
+    pv.innerHTML = `<img src="${data}" alt="待投喂的照片"><button class="rm">✕</button>`;
+    pv.style.display = 'block';
+    pv.querySelector('.rm').onclick = () => { clearAttach(); checkCanFeed(); };
+    e.target.value = '';
+    checkCanFeed();
+  });
+});
+function compressImage(file) {
+  return new Promise(resolve => {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const img = new Image();
+      img.onload = () => {
+        const maxW = 900;
+        const scale = Math.min(1, maxW / img.width);
+        const c = document.createElement('canvas');
+        c.width = Math.round(img.width * scale);
+        c.height = Math.round(img.height * scale);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        resolve(c.toDataURL('image/jpeg', 0.72));
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+/* ================= 小票 ================= */
+function openTicket(id, m) {
+  if (!m) return;
+  S.ticketId = id;
+  const fd = FOODS.find(f => f.id === m.foodId) || FOODS[0];
+  const friend = S.members.find(x => x.id === m.memberId);
+  const feeder = m.feederName;
+  const whoLine = friend ? `${friend.sp} ${friend.name}` : (feeder ? `${m.feederSp} ${feeder}` : '—');
+  const fromLine = m.ownerId === S.me?.id ? '你（饲养员）' : (feeder ? m.feederSp + ' ' + feeder : '—');
+  let content = m.text || '';
+  if (m.media?.type === 'image') content = (content ? content + '\n' : '') + '【照片】';
+
+  const d = new Date(m.ts);
+  const p = n => String(n).padStart(2, '0');
+  const dateStr = `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日 ${p(d.getHours())}:${p(d.getMinutes())}`;
+
+  $('#ticketBody').innerHTML = `
+    <div class="t-head">🍳 投喂小票</div>
+    <div class="t-sub">FEEDING STATION · 今日食堂</div>
+    <div class="t-divider"></div>
+    <div class="t-dish">${fd.emoji}</div>
+    <div class="t-name">${fd.name}</div>
+    <div><span class="t-tag" style="background:${fd.color}">${fd.tag}</span></div>
+    ${content ? `<div class="t-content">${linkify(esc(content))}</div>` : ''}
+    <div class="t-divider"></div>
+    <div class="t-foot">投喂对象：${whoLine}<br>来自：${fromLine}<br>${dateStr}</div>
+  `;
+  $('#ticketModal').classList.add('show');
+}
+$('#copyTicket').addEventListener('click', () => {
+  const m = [...S.myFeeds, ...S.tableFeeds].find(f => f.id === S.ticketId);
+  if (!m) return;
+  const fd = FOODS.find(f => f.id === m.foodId) || FOODS[0];
+  const friend = S.members.find(x => x.id === m.memberId);
+  const d = new Date(m.ts);
+  const p = n => String(n).padStart(2, '0');
+  let content = m.text || '';
+  if (m.media?.type === 'image') content = '【照片】' + (content ? '\n' + content : '');
+  const text =
+`🍳 投喂站 · 投喂小票
+──────────────
+${fd.emoji} ${fd.name}（${fd.tag}）
+投喂对象：${friend ? friend.sp + ' ' + friend.name : '—'}
+──────────────
+${content || ''}
+──────────────
+来自：${S.me.name} 🧡
+${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日 ${p(d.getHours())}:${p(d.getMinutes())}
+「被惦记，就是最香的一口」`;
+  copyText(text).then(() => { toast('小票已复制，去微信粘给朋友吧 📋'); $('#ticketModal').classList.remove('show'); });
+});
+function copyText(t) {
+  if (navigator.clipboard?.writeText) return navigator.clipboard.writeText(t);
+  return new Promise(res => {
+    const ta = document.createElement('textarea');
+    ta.value = t; document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); ta.remove(); res();
+  });
+}
+
+/* ================= 加入投喂站 ================= */
+$('#openJoin').onclick = () => {
+  $('#joinCode').value = '';
+  $('#joinModal').classList.add('show');
+  setTimeout(() => $('#joinCode').focus(), 50);
+};
+$('#cancelJoin').onclick = () => $('#joinModal').classList.remove('show');
+$('#doJoin').onclick = async () => {
+  const code = $('#joinCode').value.trim().toUpperCase();
+  if (!code) return toast('输入朋友的邀请码呀');
+  try {
+    const data = await api('/api/join', { method: 'POST', body: JSON.stringify({ code }) });
+    toast(data.already
+      ? `你已经是 ${data.ownerName} 的干饭人啦`
+      : `🎉 你成为了 ${data.ownerName} 投喂站的干饭人！ta 可以投喂你了`);
+    $('#joinModal').classList.remove('show');
+    await refreshAll();
+  } catch (e) { toast(e.message); }
+};
+
+/* ================= 邀请码复制 ================= */
+$('#copyCode').onclick = () => {
+  copyText(S.me.inviteCode).then(() => toast('邀请码已复制，发给朋友吧 🔑'));
+};
+
+/* ================= Tab 切换 ================= */
+$('#tabStation').onclick = () => switchTab('station');
+$('#tabTable').onclick = () => { switchTab('table'); refreshTableOnly(); };
+function switchTab(t) {
+  S.tab = t;
+  $('#tabStation').classList.toggle('active', t === 'station');
+  $('#tabTable').classList.toggle('active', t === 'table');
+  $('#stationTab').hidden = t !== 'station';
+  $('#tableTab').hidden = t !== 'table';
+  if (t === 'table') { S.selDate = todayKeyStr(); renderTable(); }
+}
+
+/* ================= 轮询（被投喂提醒） ================= */
+let lastTableLen = 0;
+async function refreshTableOnly() {
+  if (!S.token) return;
+  try {
+    const data = await api('/api/table');
+    const fresh = data.feeds.length > lastTableLen;
+    lastTableLen = data.feeds.length;
+    S.tableFeeds = data.feeds;
+    if (fresh && lastTableLen > 0) {
+      toast('🍽️ 收到投喂！快去饭桌看看');
+    }
+    if (S.tab === 'table') renderTable();
+  } catch (e) { /* 忽略轮询错误 */ }
+}
+setInterval(() => { if (S.token) refreshTableOnly(); }, 15000);
+
+/* ================= 工具 ================= */
+let toastTimer;
+function toast(msg) {
+  const t = $('#toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+/* 事件 */
+$('#feedText').addEventListener('input', checkCanFeed);
+$('#feedBtn').addEventListener('click', feed);
+$('#backToday').onclick = () => { S.selDate = todayKeyStr(); renderTable(); };
+$('#closeTicket').onclick = () => $('#ticketModal').classList.remove('show');
+[['joinModal','joinModal'],['ticketModal','ticketModal']].forEach(([id]) => {
+  document.getElementById(id).addEventListener('click', e => {
+    if (e.target.id === id) e.target.classList.remove('show');
+  });
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { $('#joinModal').classList.remove('show'); $('#ticketModal').classList.remove('show'); }
+});
+
+/* ================= 启动 ================= */
+renderAuthSpecies();
+setAuthMode('login');
+if (S.token) {
+  initApp().catch(() => logout());
+} else {
+  $('#authScreen').style.display = 'flex';
+}
+</script>
+</body>
+</html>

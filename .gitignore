@@ -1,0 +1,7 @@
+# 数据与上传文件不入库（云部署时由持久卷挂载）
+data/
+uploads/
+
+node_modules/
+.DS_Store
+*.log
