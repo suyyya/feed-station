@@ -16,7 +16,7 @@ const DATA_FILE = path.join(DATA_DIR, 'db.json');
 const UPLOAD_DIR = process.env.UPLOAD_DIR ? path.resolve(process.env.UPLOAD_DIR) : path.join(ROOT, 'uploads');
 const PUBLIC_DIR = path.join(ROOT, 'public');
 const PORT = process.env.PORT || 3789;
-const VERSION = '1.0.0';
+const VERSION = '1.0.1';
 
 fs.mkdirSync(DATA_DIR, { recursive: true });
 fs.mkdirSync(UPLOAD_DIR, { recursive: true });

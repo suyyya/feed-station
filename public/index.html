@@ -301,11 +301,11 @@
     <div class="a-sub" id="aSub">老朋友回来了，还是第一次来开食堂？</div>
     <div class="a-err" id="aErr"></div>
     <div class="field">
-      <label>名字（朋友的称呼）</label>
+      <label>你的名字</label>
       <input type="text" id="aName" maxlength="12" placeholder="比如：派派">
     </div>
     <div class="field">
-      <label>密码</label>
+      <label>你的密码</label>
       <input type="password" id="aPass" placeholder="至少 4 位">
     </div>
     <div class="field" id="spField" style="display:none">
@@ -400,7 +400,7 @@
   <footer>
     <div>做菜的人是<b>饲养员</b>，被喂的人是<b>干饭人</b> —— 被惦记，就是最香的一口 🍜</div>
     <div class="sig">🍳 投喂站 · 用心意喂饱每一个重要的人</div>
-    <div class="ver">v1.0.0</div>
+    <div class="ver">v1.0.1 · 来自一只小派</div>
   </footer>
 </div>
 
@@ -966,17 +966,23 @@ function switchTab(t) {
 }
 
 /* ================= 轮询（被投喂提醒） ================= */
-let lastTableLen = 0;
+let lastSeenMax = Number(localStorage.getItem('fs_lastSeen') || 0);
+let lastSeenInit = lastSeenMax > 0;
 async function refreshTableOnly() {
   if (!S.token) return;
   try {
     const data = await api('/api/table');
-    const fresh = data.feeds.length > lastTableLen;
-    lastTableLen = data.feeds.length;
-    S.tableFeeds = data.feeds;
-    if (fresh && lastTableLen > 0) {
+    const maxTs = data.feeds.length ? data.feeds[0].ts : 0;
+    if (!lastSeenInit) {
+      lastSeenMax = maxTs;
+      lastSeenInit = true;
+      localStorage.setItem('fs_lastSeen', String(maxTs));
+    } else if (maxTs > lastSeenMax) {
+      lastSeenMax = maxTs;
+      localStorage.setItem('fs_lastSeen', String(maxTs));
       toast('🍽️ 收到投喂！快去饭桌看看');
     }
+    S.tableFeeds = data.feeds;
     if (S.tab === 'table') renderTable();
   } catch (e) { /* 忽略轮询错误 */ }
 }
