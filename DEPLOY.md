@@ -155,19 +155,53 @@ git push -u origin main
 
 ---
 
-## ⚙️ 后续维护
+## ⚙️ 后续维护：迭代更新流程
 
-### 修改代码后重新部署
+> 版本记录统一维护在 **CHANGELOG.md**（每次更新在顶部追加一条），版本号规则见该文件开头。
+
+### 0. 首次连接 GitHub（一次性）
+
+本地代码和 GitHub 仓库目前是两套独立历史（网页上传 vs git 提交），首次推代码用强制推送，以本地为权威：
 
 ```bash
 cd feed-station
-# 在网页上 git 修改
-git add -A
-git commit -m "你的修改说明"
-git push   # Railway 会自动检测到并重新部署
+git remote add origin https://github.com/suyyya/feed-station.git   # 已配置可跳过
+git push -f origin main        # 首次：用本地覆盖 GitHub（之后不要再用 -f）
+git push origin v1.0.0         # 推送版本标签
 ```
 
-或者直接在 GitHub 网页上编辑文件，Railway 也会自动重新部署。
+> **HTTPS 认证**：push 时提示输入用户名/密码，密码填 GitHub 生成的 **Personal Access Token**（GitHub → Settings → Developer settings → Personal access tokens → 生成，勾选 repo 权限），不是登录密码。
+
+### 1. 本地修改 + 测试
+
+```bash
+cd feed-station
+# 改代码（server.js / public/index.html 等）
+node server.js                 # 本地起服务
+# 打开 http://localhost:3789 手动测试，没问题再继续
+```
+
+### 2. 更新 CHANGELOG.md
+
+在文件**最顶部**追加新版本记录（版本号、日期、更新内容、变更文件），版本号按规则递增。
+
+### 3. 提交并推送 GitHub
+
+```bash
+git add -A
+git commit -m "feat/fix: 一句话说明这次改了什么"
+git push origin main           # Railway 会自动检测到并重新部署
+```
+
+### 4. Railway 自动部署
+
+- push 后 Railway 自动拉取最新代码重新部署，**无需手动操作**
+- ⚠️ **高峰时段限制**：免费层在阿姆斯特丹时间 8:00-20:00（= 中国 **14:00 - 次日 2:00**）**不能发起新部署**。这个时段 push 会部署失败，等凌晨 2 点后到 Railway 点 Redeploy 即可
+- 部署成功验证：打开线上链接，看页面底部版本号是否更新
+
+### 5. 验证线上
+
+打开线上域名 → 页面底部应显示新版本号 → 注册/登录/投喂各点一遍。
 
 ### 查看日志
 
