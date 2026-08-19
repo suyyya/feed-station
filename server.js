@@ -2,6 +2,7 @@
  * 🍳 投喂站 · 多人版后端（零依赖）
  * 运行：node server.js  →  http://localhost:3789
  * 数据：data/db.json + uploads/（图片）
+ * 版本：与 CHANGELOG.md 同步维护
  */
 const http = require('http');
 const fs = require('fs');
@@ -15,6 +16,7 @@ const DATA_FILE = path.join(DATA_DIR, 'db.json');
 const UPLOAD_DIR = process.env.UPLOAD_DIR ? path.resolve(process.env.UPLOAD_DIR) : path.join(ROOT, 'uploads');
 const PUBLIC_DIR = path.join(ROOT, 'public');
 const PORT = process.env.PORT || 3789;
+const VERSION = '1.0.0';
 
 fs.mkdirSync(DATA_DIR, { recursive: true });
 fs.mkdirSync(UPLOAD_DIR, { recursive: true });
