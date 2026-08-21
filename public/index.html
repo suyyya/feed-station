@@ -157,12 +157,14 @@
   .meal .content a{color:var(--peach-deep);font-weight:600;text-decoration:none;border-bottom:1.5px dashed var(--peach)}
   .meal .media{margin-top:10px;border-radius:var(--r-sm);overflow:hidden;max-width:260px;box-shadow:var(--shadow-sm)}
   .meal .media img{width:100%;display:block;max-height:200px;object-fit:cover}
-  .meal .reaction{margin-top:10px;display:inline-flex;align-items:center;gap:6px;background:#EAF4E4;
+  .meal .reaction{display:inline-flex;align-items:center;gap:6px;background:#EAF4E4;
     border:1.5px dashed var(--pistachio);color:#4E6E3F;font-size:12.5px;font-weight:600;padding:5px 12px;border-radius:999px}
   .meal .reaction .mouth{animation:nom 1.4s ease-in-out infinite;display:inline-block}
   @keyframes nom{0%,100%{transform:scale(1)}50%{transform:scale(1.25) rotate(12deg)}}
-  .meal .ops{position:absolute;top:10px;right:10px;display:flex;gap:4px;opacity:0;transition:opacity .2s}
+  .meal .foot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px}
+  .meal .ops{display:flex;gap:4px;opacity:0;transition:opacity .2s}
   .meal:hover .ops{opacity:1}
+  @media (hover:none){.meal .ops{opacity:1}}
   .meal .ops button{border:none;background:#FFF1E3;color:var(--cocoa-soft);cursor:pointer;width:26px;height:26px;
     border-radius:8px;font-size:13px;display:flex;align-items:center;justify-content:center;transition:background .15s}
   .meal .ops button:hover{background:var(--peach);color:#fff}
@@ -231,6 +233,13 @@
   .a-btn:hover{transform:translateY(-2px)}
   .a-switch{text-align:center;margin-top:16px;font-size:13.5px;color:var(--cocoa-soft)}
   .a-switch a{color:var(--peach-deep);font-weight:700;cursor:pointer;text-decoration:none;border-bottom:1.5px dashed var(--peach)}
+  .auth-foot{position:absolute;bottom:14px;left:0;right:0;text-align:center;font-size:12.5px;line-height:2;color:var(--cocoa-soft)}
+  .auth-foot .sig{font-family:var(--font-display);color:var(--peach-deep);font-size:13px}
+  .auth-foot .ver{font-size:11px;opacity:.6}
+  .auth-more{border:none;background:none;cursor:pointer;font-family:inherit;font-size:11.5px;
+    color:var(--cocoa-soft);opacity:.7;text-decoration:underline;text-underline-offset:3px;
+    transition:opacity .15s,color .15s}
+  .auth-more:hover{opacity:1;color:var(--peach-deep)}
   .a-err{background:#FDECEC;border:1.5px solid #F0B4B4;color:#B05252;font-size:13px;border-radius:var(--r-sm);
     padding:10px 14px;margin-bottom:14px;display:none;line-height:1.6}
 
@@ -249,6 +258,16 @@
   .btn-ghost:hover{background:#FFE8D2}
   .btn-main{background:var(--peach);color:#fff;box-shadow:0 6px 16px rgba(233,106,58,.35)}
   .btn-main:hover{background:var(--peach-deep)}
+  .more-sec{margin-bottom:18px}
+  .more-sec:last-child{margin-bottom:0}
+  .more-title{font-weight:800;font-size:14px;color:var(--cocoa);margin-bottom:10px}
+  .more-log{display:flex;flex-direction:column;gap:9px;background:#FFFBF4;border:1.5px solid var(--line);border-radius:var(--r-sm);padding:12px 14px}
+  .ml-item{font-size:13px;line-height:1.5;color:var(--cocoa)}
+  .ml-item b{color:var(--peach-deep)}
+  .ml-item span{color:var(--cocoa-soft);font-size:11px;margin-left:8px}
+  .ml-item p{color:var(--cocoa-soft);font-size:12.5px;margin-top:2px}
+  .more-text{background:#FFFBF4;border:1.5px solid var(--line);border-radius:var(--r-sm);padding:12px 14px;font-size:13px;line-height:1.7;color:var(--cocoa);display:flex;flex-direction:column;gap:8px}
+  .more-text b{color:var(--peach-deep)}
 
   .ticket{background:#FFFDF8;border:2px dashed var(--peach);border-radius:18px;padding:24px 22px;text-align:center;position:relative}
   .ticket .t-head{font-family:var(--font-display);font-size:22px;letter-spacing:2px;color:var(--peach-deep)}
@@ -270,6 +289,9 @@
   footer{text-align:center;margin-top:40px;color:var(--cocoa-soft);font-size:12.5px;line-height:2}
   footer .sig{font-family:var(--font-display);color:var(--peach-deep);font-size:13px}
   footer .ver{font-size:11px;opacity:.6;margin-top:2px}
+  footer .more-link{margin-top:8px;border:none;background:none;cursor:pointer;font-family:inherit;font-size:11.5px;
+    color:var(--cocoa-soft);opacity:.75;text-decoration:underline;text-underline-offset:3px;transition:opacity .15s,color .15s}
+  footer .more-link:hover{opacity:1;color:var(--peach-deep)}
 
   .flying{position:fixed;z-index:999;font-size:42px;pointer-events:none;filter:drop-shadow(0 6px 10px rgba(0,0,0,.2));
     transition:transform .85s cubic-bezier(.34,.7,.3,1),opacity .85s;will-change:transform}
@@ -314,6 +336,12 @@
     </div>
     <button class="a-btn" id="aBtn">🍚 进来干饭</button>
     <div class="a-switch" id="aSwitch">第一次来？<a>开一个自己的投喂站 →</a></div>
+  </div>
+  <div class="auth-foot">
+    <div>做菜的人是<b>饲养员</b>，被喂的人是<b>干饭人</b> —— 被惦记，就是最香的一口 🍜</div>
+    <div class="sig">🍳 投喂站 · 用心意喂饱每一个重要的人</div>
+    <div class="ver">v1.0.1 · 来自一只小派</div>
+    <button class="auth-more" id="authMore">关于 · 更新日志</button>
   </div>
 </div>
 
@@ -401,6 +429,7 @@
     <div>做菜的人是<b>饲养员</b>，被喂的人是<b>干饭人</b> —— 被惦记，就是最香的一口 🍜</div>
     <div class="sig">🍳 投喂站 · 用心意喂饱每一个重要的人</div>
     <div class="ver">v1.0.1 · 来自一只小派</div>
+    <button class="more-link" id="moreBtn">关于 · 更新日志</button>
   </footer>
 </div>
 
@@ -426,7 +455,33 @@
     <div class="ticket" id="ticketBody"></div>
     <div class="modal-btns">
       <button class="btn-ghost" id="closeTicket">收好</button>
-      <button class="btn-main" id="copyTicket">📋 复制小票</button>
+      <button class="btn-main" id="dlTicket">🖼️ 下载</button>
+    </div>
+  </div>
+</div>
+
+<!-- 更多弹窗 -->
+<div class="overlay" id="moreModal">
+  <div class="modal" style="max-width:430px">
+    <h3>🍳 关于投喂站</h3>
+    <div class="more-sec">
+      <div class="more-title">📖 更新日志</div>
+      <div class="more-log">
+        <div class="ml-item"><b>v1.1.0</b><span>2026-08-20</span><p>新增「更多」菜单、小票图片下载，优化投喂卡片按钮布局</p></div>
+        <div class="ml-item"><b>v1.0.1</b><span>2026-08-19</span><p>修复投喂提醒误报，登录文案更亲切</p></div>
+        <div class="ml-item"><b>v1.0.0</b><span>2026-08-19</span><p>投喂站正式发布：投喂、饭桌、热力图、邀请码</p></div>
+      </div>
+    </div>
+    <div class="more-sec">
+      <div class="more-title">💡 产品说明</div>
+      <div class="more-text">
+        <p><b>这里是什么？</b>把夸奖做成糖、吐槽做成辣椒、八卦做成西瓜——用心意喂饱朋友的小食堂。</p>
+        <p><b>怎么玩？</b>① 开一个自己的投喂站，把邀请码发给朋友；② 朋友凭码加入，你就能投喂 ta；③ ta 投喂你的，会出现在你的饭桌上；④ 热力图记录每一份被惦记的心意。</p>
+        <p><b>菜的含义？</b><span id="moreDishes"></span></p>
+      </div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-main" id="closeMore">知道啦</button>
     </div>
   </div>
 </div>
@@ -627,10 +682,6 @@ function mealCard(m, opts = {}) {
   if (m.text) content += `<div class="content">${linkify(esc(m.text))}</div>`;
   const who = opts.who ? `<span class="who">${opts.who}</span>` : '';
   return `<div class="meal" data-id="${m.id}">
-    <div class="ops">
-      <button class="share" title="生成投喂小票">🧾</button>
-      <button class="del" title="撤下这盘菜">🗑️</button>
-    </div>
     <div class="top">
       <span class="dish-emoji">${fd.emoji}</span>
       <span class="dish-name">${fd.name}</span>
@@ -639,7 +690,13 @@ function mealCard(m, opts = {}) {
       <span class="time">${fmtTime(m.ts)}</span>
     </div>
     ${content}
-    <div class="reaction"><span class="mouth">😋</span> ${esc(m.reaction)}</div>
+    <div class="foot">
+      <div class="reaction"><span class="mouth">😋</span> ${esc(m.reaction)}</div>
+      <div class="ops">
+        <button class="share" title="生成投喂小票">🧾</button>
+        <button class="del" title="撤下这盘菜">🗑️</button>
+      </div>
+    </div>
   </div>`;
 }
 
@@ -897,28 +954,6 @@ function openTicket(id, m) {
   `;
   $('#ticketModal').classList.add('show');
 }
-$('#copyTicket').addEventListener('click', () => {
-  const m = [...S.myFeeds, ...S.tableFeeds].find(f => f.id === S.ticketId);
-  if (!m) return;
-  const fd = FOODS.find(f => f.id === m.foodId) || FOODS[0];
-  const friend = S.members.find(x => x.id === m.memberId);
-  const d = new Date(m.ts);
-  const p = n => String(n).padStart(2, '0');
-  let content = m.text || '';
-  if (m.media?.type === 'image') content = '【照片】' + (content ? '\n' + content : '');
-  const text =
-`🍳 投喂站 · 投喂小票
-──────────────
-${fd.emoji} ${fd.name}（${fd.tag}）
-投喂对象：${friend ? friend.sp + ' ' + friend.name : '—'}
-──────────────
-${content || ''}
-──────────────
-来自：${S.me.name} 🧡
-${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日 ${p(d.getHours())}:${p(d.getMinutes())}
-「被惦记，就是最香的一口」`;
-  copyText(text).then(() => { toast('小票已复制，去微信粘给朋友吧 📋'); $('#ticketModal').classList.remove('show'); });
-});
 function copyText(t) {
   if (navigator.clipboard?.writeText) return navigator.clipboard.writeText(t);
   return new Promise(res => {
@@ -927,6 +962,109 @@ function copyText(t) {
     document.execCommand('copy'); ta.remove(); res();
   });
 }
+
+/* ================= 更多（更新日志/产品说明） ================= */
+function openMore() {
+  $('#moreDishes').textContent = FOODS.map(f => `${f.emoji} ${f.name}`).join(' · ');
+  $('#moreModal').classList.add('show');
+}
+$('#closeMore').addEventListener('click', () => $('#moreModal').classList.remove('show'));
+$('#moreBtn').addEventListener('click', openMore);
+$('#authMore').addEventListener('click', openMore);
+
+/* ================= 小票下载（canvas 绘制 PNG） ================= */
+function wrapTextLines(text, maxW, fs) {
+  const c = document.createElement('canvas').getContext('2d');
+  c.font = `14px "PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif`;
+  const out = [];
+  for (const seg of String(text).split('\n')) {
+    let line = '';
+    for (const ch of seg) {
+      if (c.measureText(line + ch).width > maxW) { out.push(line); line = ch; }
+      else line += ch;
+    }
+    out.push(line);
+  }
+  return out.filter(Boolean).length ? out : [''];
+}
+function dashLine(c, x1, y1, x2, y2) {
+  c.save(); c.strokeStyle = '#F0DCC8'; c.lineWidth = 1.5; c.setLineDash([5, 4]);
+  c.beginPath(); c.moveTo(x1, y1); c.lineTo(x2, y2); c.stroke(); c.restore();
+}
+function roundRectPath(c, x, y, w, h, r) {
+  c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r);
+  c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r);
+  c.arcTo(x, y, x + w, y, r); c.closePath();
+}
+function drawTicketPNG(m) {
+  const fd = FOODS.find(f => f.id === m.foodId) || FOODS[0];
+  const friend = S.members.find(x => x.id === m.memberId);
+  const feeder = m.feederName;
+  const whoLine = friend ? `${friend.sp} ${friend.name}` : (feeder ? `${m.feederSp} ${feeder}` : '—');
+  const fromLine = m.ownerId === S.me?.id ? '你（饲养员）' : (feeder ? m.feederSp + ' ' + feeder : '—');
+  let content = m.text || '';
+  if (m.media?.type === 'image') content = (content ? content + '\n' : '') + '【照片】';
+  const d = new Date(m.ts);
+  const p = n => String(n).padStart(2, '0');
+  const dateStr = `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日 ${p(d.getHours())}:${p(d.getMinutes())}`;
+
+  const W = 420, PAD = 34;
+  const lines = wrapTextLines(content, W - PAD * 2 - 16, 14);
+  const H = 320 + lines.length * 24 + 128;
+  const cv = document.createElement('canvas');
+  cv.width = W; cv.height = H;
+  const c = cv.getContext('2d');
+  const FONT = '"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif';
+
+  c.fillStyle = '#FFFDF8'; c.fillRect(0, 0, W, H);
+  c.strokeStyle = '#FF8A5C'; c.lineWidth = 2; c.setLineDash([6, 5]);
+  roundRectPath(c, 12, 12, W - 24, H - 24, 18); c.stroke(); c.setLineDash([]);
+
+  c.textAlign = 'center';
+  c.fillStyle = '#E96A3A'; c.font = `22px "Yuanti SC","YouYuan",${FONT}`;
+  c.fillText('🍳 投喂小票', W / 2, 58);
+  c.fillStyle = '#8A6A5C'; c.font = `11px ${FONT}`;
+  c.fillText('FEEDING STATION · 今日食堂', W / 2, 82);
+  dashLine(c, PAD, 102, W - PAD, 102);
+
+  c.font = '44px "Apple Color Emoji","Segoe UI Emoji",serif';
+  c.fillText(fd.emoji, W / 2, 158);
+  c.fillStyle = '#4A3128'; c.font = `700 18px ${FONT}`;
+  c.fillText(fd.name, W / 2, 192);
+
+  const tagW = c.measureText(fd.tag).width + 20;
+  roundRectPath(c, W / 2 - tagW / 2, 204, tagW, 24, 12);
+  c.fillStyle = fd.color; c.fill();
+  c.fillStyle = '#fff'; c.font = `700 12px ${FONT}`;
+  c.fillText(fd.tag, W / 2, 220);
+
+  let y = 262;
+  if (lines.length && lines[0] !== '') {
+    c.textAlign = 'left'; c.fillStyle = '#4A3128'; c.font = `14px ${FONT}`;
+    lines.forEach(ln => { c.fillText(ln, PAD + 10, y); y += 24; });
+    dashLine(c, PAD, y + 4, W - PAD, y + 4);
+    y += 30;
+  } else {
+    dashLine(c, PAD, y - 2, W - PAD, y - 2);
+    y += 8;
+  }
+
+  c.textAlign = 'center'; c.fillStyle = '#8A6A5C'; c.font = `12px ${FONT}`;
+  [ `投喂对象：${whoLine}`, `来自：${fromLine}`, dateStr ].forEach(f => { c.fillText(f, W / 2, y); y += 22; });
+  c.fillStyle = '#E96A3A';
+  c.fillText('「被惦记，就是最香的一口」', W / 2, y + 8);
+
+  const a = document.createElement('a');
+  a.download = `投喂小票-${fd.name}.png`;
+  a.href = cv.toDataURL('image/png');
+  a.click();
+}
+$('#dlTicket').addEventListener('click', () => {
+  const m = [...S.myFeeds, ...S.tableFeeds].find(f => f.id === S.ticketId);
+  if (!m) return;
+  drawTicketPNG(m);
+  toast('小票已生成，保存到本地吧 🖼️');
+});
 
 /* ================= 加入投喂站 ================= */
 $('#openJoin').onclick = () => {
