@@ -182,10 +182,14 @@
   .stat .lbl{font-size:11px;color:var(--cocoa-soft);font-weight:600;margin-top:2px}
 
   .date-chip{display:inline-flex;align-items:center;gap:8px;background:#FFF1E3;border:1.5px solid var(--line);
-    border-radius:999px;padding:7px 14px;font-size:13.5px;font-weight:700;margin-bottom:14px}
-  .date-chip .back{border:none;background:var(--peach);color:#fff;font-size:11px;font-weight:700;
-    padding:4px 10px;border-radius:999px;cursor:pointer;display:none}
-  .date-chip .back.show{display:inline-block}
+    border-radius:999px;padding:7px 14px;font-size:13.5px;font-weight:700;cursor:pointer;
+    transition:background .15s,border-color .15s,transform .15s}
+  .date-chip:hover{background:#FFE8D2;border-color:var(--peach);transform:translateY(-1px)}
+  .date-row{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+  .back-today{border:none;background:var(--peach);color:#fff;font-size:12px;font-weight:700;
+    padding:7px 14px;border-radius:999px;cursor:pointer;transition:background .15s,transform .15s;display:none}
+  .back-today:hover{background:var(--peach-deep);transform:translateY(-1px)}
+  .back-today.show{display:inline-block}
 
   /* 热力图 */
   .heat-card{background:#FFFBF4;border:1.5px solid var(--line);border-radius:var(--r-md);padding:16px;margin-bottom:18px}
@@ -206,6 +210,27 @@
   .heat .cell.l4{background:var(--heat-4)}
   .heat-month{display:grid;grid-template-columns:repeat(53,13px);gap:3px;width:max-content;margin-top:4px;font-size:10px;color:var(--cocoa-soft);align-items:center;height:16px}
   .heat-month .m{white-space:nowrap;overflow:visible;font-weight:700;line-height:1}
+
+  /* ===== 日历组件 ===== */
+  .cal-card{background:#FFFBF4;border:1.5px solid var(--line);border-radius:var(--r-md);padding:16px;margin-bottom:18px}
+  .cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+  .cal-head .t{font-size:14px;font-weight:800}
+  .cal-nav{border:1.5px solid var(--line);background:#fff;color:var(--cocoa-soft);width:26px;height:26px;border-radius:8px;cursor:pointer;font-size:16px;line-height:1;display:flex;align-items:center;justify-content:center;transition:background .15s,color .15s,border-color .15s}
+  .cal-nav:hover{background:var(--peach);color:#fff;border-color:var(--peach)}
+  .cal-week{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;font-size:11px;color:var(--cocoa-soft);font-weight:600;margin-bottom:4px}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+  .cal-cell{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;aspect-ratio:1.15;border-radius:10px;cursor:pointer;font-size:13px;color:var(--cocoa);border:1.5px solid transparent;transition:background .12s,transform .12s;user-select:none}
+  .cal-cell:hover{background:var(--cream-2);transform:scale(1.06)}
+  .cal-cell.today{border-color:var(--peach-deep)}
+  .cal-cell.sel{background:var(--peach);color:#fff;font-weight:800}
+  .cal-cell.future{opacity:.3;cursor:default}
+  .cal-cell.future:hover{background:transparent;transform:none}
+  .cal-cell .dot{width:5px;height:5px;border-radius:50%;background:var(--heat-1);display:block;margin-top:3px}
+  .cal-cell .dot.l2{background:var(--heat-2)}
+  .cal-cell .dot.l3{background:var(--heat-3)}
+  .cal-cell .dot.l4{background:var(--heat-4)}
+  .cal-cell.sel .dot{background:#fff}
+  .cal-cell.future .dot{display:none}
 
   /* ===== 登录页 ===== */
   .auth-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;position:relative;z-index:1}
@@ -340,7 +365,7 @@
   <div class="auth-foot">
     <div>做菜的人是<b>饲养员</b>，被喂的人是<b>干饭人</b> —— 被惦记，就是最香的一口 🍜</div>
     <div class="sig">🍳 投喂站 · 用心意喂饱每一个重要的人</div>
-    <div class="ver">v1.0.1 · 来自一只小派</div>
+    <div class="ver">v1.1.0 · 来自一只小派</div>
     <button class="auth-more" id="authMore">关于 · 更新日志</button>
   </div>
 </div>
@@ -420,7 +445,10 @@
         <div class="heat-scroll"><div class="heat" id="heatGrid"></div><div class="heat-month" id="heatMonths"></div></div>
       </div>
 
-      <div class="date-chip" id="dateChip"><span id="dateLabel">今天</span><button class="back" id="backToday">回今天</button></div>
+      <div class="date-row">
+        <div class="date-chip" id="dateChip"><span id="dateLabel">📅 今天</span></div>
+        <button class="back-today" id="backToday">回今天</button>
+      </div>
       <div class="log" id="tableLog"></div>
     </div>
   </section>
@@ -428,7 +456,7 @@
   <footer>
     <div>做菜的人是<b>饲养员</b>，被喂的人是<b>干饭人</b> —— 被惦记，就是最香的一口 🍜</div>
     <div class="sig">🍳 投喂站 · 用心意喂饱每一个重要的人</div>
-    <div class="ver">v1.0.1 · 来自一只小派</div>
+    <div class="ver">v1.1.0 · 来自一只小派</div>
     <button class="more-link" id="moreBtn">关于 · 更新日志</button>
   </footer>
 </div>
@@ -460,6 +488,26 @@
   </div>
 </div>
 
+<!-- 日历弹窗 -->
+<div class="overlay" id="calModal">
+  <div class="modal" style="max-width:360px">
+    <h3>📅 选一天查看投喂</h3>
+    <div class="cal-card" style="margin:0;padding:0;border:none;background:transparent">
+      <div class="cal-head">
+        <button class="cal-nav" id="calPrev" title="上个月">‹</button>
+        <div class="t" id="calTitle">—</div>
+        <button class="cal-nav" id="calNext" title="下个月">›</button>
+      </div>
+      <div class="cal-week"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div>
+      <div class="cal-grid" id="calGrid"></div>
+    </div>
+    <div class="modal-btns" style="margin-top:14px">
+      <button class="btn-ghost" id="closeCal">取消</button>
+      <button class="btn-main" id="calConfirmBtn">确认</button>
+    </div>
+  </div>
+</div>
+
 <!-- 更多弹窗 -->
 <div class="overlay" id="moreModal">
   <div class="modal" style="max-width:430px">
@@ -467,9 +515,9 @@
     <div class="more-sec">
       <div class="more-title">📖 更新日志</div>
       <div class="more-log">
-        <div class="ml-item"><b>v1.1.0</b><span>2026-08-20</span><p>新增「更多」菜单、小票图片下载，优化投喂卡片按钮布局</p></div>
-        <div class="ml-item"><b>v1.0.1</b><span>2026-08-19</span><p>修复投喂提醒误报，登录文案更亲切</p></div>
-        <div class="ml-item"><b>v1.0.0</b><span>2026-08-19</span><p>投喂站正式发布：投喂、饭桌、热力图、邀请码</p></div>
+        <div class="ml-item"><b>v1.1.0</b><span>2026-08-21</span><p>上新几道硬菜，做完这桌就等下班去打洲 🎮</p></div>
+        <div class="ml-item"><b>v1.0.1</b><span>2026-08-19</span><p>修了几个小 bug，奖励自己一杯续命咖啡 ☕</p></div>
+        <div class="ml-item"><b>v1.0.0</b><span>2026-08-19</span><p>投喂站正式开张！小派摸鱼大业圆满达成 🎉</p></div>
       </div>
     </div>
     <div class="more-sec">
@@ -499,14 +547,20 @@ const SPECIES = [
 ];
 const FOODS = [
   {id:'gossip',name:'八卦',emoji:'🍉',tag:'有料',color:'#FF6B81',ph:'比如：听说有人昨天…',tip:'瓜要保熟，记得补充细节'},
-  {id:'praise',name:'夸奖',emoji:'🍬',tag:'甜甜的',color:'#F5B93D',ph:'夸就完事了！',tip:'彩虹屁也行，真心的更好'},
-  {id:'compliment',name:'赞美',emoji:'🍓',tag:'高甜',color:'#FF8A5C',ph:'一句走心的赞美…',tip:'赞美要具体，效果翻倍'},
+  {id:'kua',name:'夸夸',emoji:'🍬',tag:'甜甜的',color:'#F5B93D',ph:'夸就完事了！',tip:'彩虹屁也行，真心的更好'},
+  {id:'miss',name:'想念',emoji:'💌',tag:'惦记着',color:'#F08CAE',ph:'想你了，最近过得好吗…',tip:'被惦记，就是最香的一口'},
   {id:'rant',name:'工作吐槽',emoji:'🌶️',tag:'火辣',color:'#E85D4A',ph:'今天又怎么了？倒出来吧…',tip:'吐槽不是负能量，是信任'},
   {id:'joke',name:'冷笑话',emoji:'🧊',tag:'透心凉',color:'#5B8DEF',ph:'讲个冷笑话…',tip:'越冷越好，冻住才算赢'},
   {id:'photo',name:'照片',emoji:'📷',tag:'现烤',color:'#7FB069',ph:'配上一句话，或者什么都不说…',tip:'选一张照片，新鲜出炉'},
-  {id:'link',name:'链接',emoji:'🍔',tag:'夹心',color:'#B98AE0',ph:'贴个链接，顺便说句这是啥…',tip:'好东西要配食用说明'},
-  {id:'file',name:'文件',emoji:'🍱',tag:'管饱',color:'#C98A3D',ph:'传个文件，附上一句使用说明…',tip:'豪华便当，慢慢消化'},
+  {id:'here',name:'此刻我在…',emoji:'📍',tag:'报平安',color:'#58C4B8',ph:'此刻我在…（比如：加班写周报 / 楼下咖啡店发呆）',tip:'报个平安，让朋友知道你在哪'},
+  {id:'free',name:'想到啥说啥',emoji:'💬',tag:'随心',color:'#B98AE0',ph:'随便说点啥，想到哪说到哪…',tip:'不用组织语言，想到就说'},
 ];
+/* 老数据映射：v1.0.x 的旧类目归并到新类目，历史投喂显示不乱 */
+const FOOD_ALIAS = { praise:'kua', compliment:'kua', link:'free', file:'free' };
+function foodOf(id) {
+  const mapped = FOOD_ALIAS[id] || id;
+  return FOODS.find(f => f.id === mapped) || FOODS[0];
+}
 
 const S = {
   token: localStorage.getItem('fs_token') || null,
@@ -514,6 +568,8 @@ const S = {
   myFeeds: [], tableFeeds: [],
   tab: 'station', curFood: null, curMember: null,
   attach: null, selDate: null, ticketId: null,
+  calY: null, calM: null, // 日历组件当前显示的年月
+  calSelDate: null, // 弹窗内临时选中的日期
 };
 let authMode = 'login';
 let authSp = '🐶';
@@ -676,7 +732,7 @@ function checkCanFeed() {
 }
 
 function mealCard(m, opts = {}) {
-  const fd = FOODS.find(f => f.id === m.foodId) || FOODS[0];
+  const fd = foodOf(m.foodId);
   let content = '';
   if (m.media?.type === 'image') content += `<div class="media"><img src="${m.media.url}" alt="投喂的照片"></div>`;
   if (m.text) content += `<div class="content">${linkify(esc(m.text))}</div>`;
@@ -731,6 +787,7 @@ function renderTable() {
   if (!S.me) return;
   const today = todayKeyStr();
   if (!S.selDate) S.selDate = today;
+  if (!S.calY) calSyncToSel(S.selDate); // 首次渲染时初始化日历到当前选中日期
   const day = S.selDate;
 
   const dayFeeds = S.tableFeeds.filter(f => f.dateKey === day);
@@ -799,9 +856,60 @@ function drawHeatmap() {
   grid.querySelectorAll('.cell').forEach(cell => {
     cell.onclick = () => {
       S.selDate = cell.dataset.key;
+      calSyncToSel(S.selDate); // 热力图选哪天，日历跳到哪月并高亮
       renderTable();
     };
   });
+}
+
+/* ================= 日历组件（月视图） ================= */
+function calRender() {
+  const y = S.calY, m = S.calM;
+  if (!y || !m) return;
+  $('#calTitle').textContent = `${y}年${m}月`;
+  const today = todayKeyStr();
+  const daysInMonth = new Date(y, m, 0).getDate();
+  const lead = new Date(y, m - 1, 1).getDay();
+  // 当月每天的投喂数
+  const prefix = `${y}-${m}-`;
+  const counts = {};
+  S.tableFeeds.forEach(f => { if (f.dateKey.startsWith(prefix)) counts[f.dateKey] = (counts[f.dateKey] || 0) + 1; });
+  const lvOf = c => c === 0 ? '' : c <= 1 ? 'l2' : c <= 3 ? 'l3' : 'l4';
+  const activeKey = S.calSelDate || S.selDate;
+
+  let html = '';
+  for (let i = 0; i < lead; i++) html += `<div class="cal-cell out"></div>`;
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dObj = new Date(y, m - 1, d);
+    const key = dateKeyOf(dObj);
+    const isFuture = dObj > new Date(); // Date 比较，避免字符串 Y-M-D 误判
+    const cls = [isFuture ? 'future' : ''];
+    if (key === today) cls.push('today');
+    if (key === activeKey) cls.push('sel');
+    const dot = counts[key] ? `<i class="dot ${lvOf(counts[key])}"></i>` : '';
+    html += `<div class="cal-cell ${cls.join(' ').trim()}" data-key="${key}"${isFuture ? '' : ` title="${key} · ${counts[key] || 0} 口"`}>${d}${dot}</div>`;
+  }
+  $('#calGrid').innerHTML = html;
+  $('#calGrid').querySelectorAll('.cal-cell[data-key]').forEach(cell => {
+    cell.onclick = () => {
+      S.calSelDate = cell.dataset.key;
+      calRender();
+    };
+  });
+}
+function calSyncToSel(dateKey) {
+  const key = dateKey || S.selDate;
+  const [y, m] = key.split('-').map(Number);
+  S.calY = y; S.calM = m;
+  calRender();
+}
+function calPrevMonth() {
+  S.calM--; if (S.calM < 1) { S.calM = 12; S.calY--; }
+  calRender();
+}
+function calNextMonth() {
+  S.calM++; if (S.calM > 12) { S.calM = 1; S.calY++; }
+  calRender();
 }
 
 /* ================= 投喂 ================= */
@@ -929,7 +1037,7 @@ function compressImage(file) {
 function openTicket(id, m) {
   if (!m) return;
   S.ticketId = id;
-  const fd = FOODS.find(f => f.id === m.foodId) || FOODS[0];
+  const fd = foodOf(m.foodId);
   const friend = S.members.find(x => x.id === m.memberId);
   const feeder = m.feederName;
   const whoLine = friend ? `${friend.sp} ${friend.name}` : (feeder ? `${m.feederSp} ${feeder}` : '—');
@@ -997,7 +1105,7 @@ function roundRectPath(c, x, y, w, h, r) {
   c.arcTo(x, y, x + w, y, r); c.closePath();
 }
 function drawTicketPNG(m) {
-  const fd = FOODS.find(f => f.id === m.foodId) || FOODS[0];
+  const fd = foodOf(m.foodId);
   const friend = S.members.find(x => x.id === m.memberId);
   const feeder = m.feederName;
   const whoLine = friend ? `${friend.sp} ${friend.name}` : (feeder ? `${m.feederSp} ${feeder}` : '—');
@@ -1009,11 +1117,13 @@ function drawTicketPNG(m) {
   const dateStr = `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日 ${p(d.getHours())}:${p(d.getMinutes())}`;
 
   const W = 420, PAD = 34;
+  const SCALE = 3; // 高清输出：3 倍像素密度，导出后文字/边框不发虚
   const lines = wrapTextLines(content, W - PAD * 2 - 16, 14);
   const H = 320 + lines.length * 24 + 128;
   const cv = document.createElement('canvas');
-  cv.width = W; cv.height = H;
+  cv.width = W * SCALE; cv.height = H * SCALE;
   const c = cv.getContext('2d');
+  c.scale(SCALE, SCALE); // 逻辑坐标不变，绘制代码无需改动
   const FONT = '"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif';
 
   c.fillStyle = '#FFFDF8'; c.fillRect(0, 0, W, H);
@@ -1136,18 +1246,43 @@ function toast(msg) {
   toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
 }
 
+function closeCalModal() {
+  $('#calModal').classList.remove('show');
+  S.calSelDate = null;
+}
+
 /* 事件 */
 $('#feedText').addEventListener('input', checkCanFeed);
 $('#feedBtn').addEventListener('click', feed);
-$('#backToday').onclick = () => { S.selDate = todayKeyStr(); renderTable(); };
+$('#backToday').onclick = () => { S.selDate = todayKeyStr(); calSyncToSel(S.selDate); renderTable(); };
+$('#calPrev').addEventListener('click', calPrevMonth);
+$('#calNext').addEventListener('click', calNextMonth);
 $('#closeTicket').onclick = () => $('#ticketModal').classList.remove('show');
-[['joinModal','joinModal'],['ticketModal','ticketModal']].forEach(([id]) => {
+$('#dateChip').addEventListener('click', () => {
+  S.calSelDate = S.selDate;
+  calSyncToSel(S.calSelDate);
+  $('#calModal').classList.add('show');
+});
+$('#closeCal').addEventListener('click', closeCalModal);
+$('#calConfirmBtn').addEventListener('click', () => {
+  S.selDate = S.calSelDate || S.selDate;
+  closeCalModal();
+  renderTable();
+});
+[['joinModal','joinModal'],['ticketModal','ticketModal'],['calModal','calModal']].forEach(([id]) => {
   document.getElementById(id).addEventListener('click', e => {
-    if (e.target.id === id) e.target.classList.remove('show');
+    if (e.target.id === id) {
+      if (e.target.id === 'calModal') closeCalModal();
+      else e.target.classList.remove('show');
+    }
   });
 });
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') { $('#joinModal').classList.remove('show'); $('#ticketModal').classList.remove('show'); }
+  if (e.key === 'Escape') {
+    $('#joinModal').classList.remove('show');
+    $('#ticketModal').classList.remove('show');
+    closeCalModal();
+  }
 });
 
 /* ================= 启动 ================= */

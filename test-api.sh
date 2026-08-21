@@ -34,7 +34,7 @@ curl -s $B/api/table -H "Authorization: Bearer $CT" | /Users/huangxin/.workbuddy
 
 echo "== 7. 权限：小柴尝试投喂派派（小柴站里没有派派，应 403）=="
 PAIPAI=$(curl -s $B/api/me -H "Authorization: Bearer $PT" | /Users/huangxin/.workbuddy/binaries/node/versions/22.22.2/bin/node -pe 'JSON.parse(require("fs").readFileSync(0)).user.id')
-curl -s $B/api/feed -X POST -H "$J" -H "Authorization: Bearer $CT" -d "{\"memberId\":\"$PAIPAI\",\"foodId\":\"praise\",\"text\":\"你好棒\"}"
+curl -s $B/api/feed -X POST -H "$J" -H "Authorization: Bearer $CT" -d "{\"memberId\":\"$PAIPAI\",\"foodId\":\"kua\",\"text\":\"你好棒\"}"
 echo
 
 echo "== 8. 派派撤菜 =="

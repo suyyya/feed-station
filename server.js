@@ -16,7 +16,7 @@ const DATA_FILE = path.join(DATA_DIR, 'db.json');
 const UPLOAD_DIR = process.env.UPLOAD_DIR ? path.resolve(process.env.UPLOAD_DIR) : path.join(ROOT, 'uploads');
 const PUBLIC_DIR = path.join(ROOT, 'public');
 const PORT = process.env.PORT || 3789;
-const VERSION = '1.0.1';
+const VERSION = '1.1.0';
 
 fs.mkdirSync(DATA_DIR, { recursive: true });
 fs.mkdirSync(UPLOAD_DIR, { recursive: true });
@@ -41,16 +41,17 @@ function genCode() {
   return c;
 }
 
-const FOODS = ['gossip','praise','compliment','rant','joke','photo','link','file'];
+const FOODS = ['gossip','kua','miss','rant','joke','photo','here','free'];
 const REACTIONS = {
-  gossip:     ['瓜很甜，籽有点多，细节不够！','吃瓜吃到饱！还有吗？','这瓜保熟，我信你！','瓜已下肚，人已精神'],
-  praise:     ['真香！甜到蛀牙了！','被甜到了，今天值了','这颗糖我存着慢慢含','夸得我脸都红了！'],
-  compliment: ['草莓味的赞美，绝了','被治愈了，谢谢饲养员！','这句我截屏收藏了','眼泪不争气地从嘴角流下'],
-  rant:       ['辣得直冒汗，但好爽！','苦是苦了点，但懂你','这是今天的饭，我干了','吐完好受多了，对吧？'],
-  joke:       ['好冷……（打了个哆嗦）','笑不出来，但嘴角动了','冷到我了，回你一个哈欠','好烂！再来一个！'],
-  photo:      ['哇，看起来真不错！','这张我保存了！','现烤的就是香','已端上桌，细细品尝'],
-  link:       ['夹层很厚，一口满足','已收藏，明天细品','这是今日最佳！','打开就停不下来了'],
-  file:       ['豪华便当！慢慢消化','已收到，感恩饲养员','这是今日干饭巅峰','够我研究一整晚'],
+  gossip:  ['瓜很甜，籽有点多，细节不够！','吃瓜吃到饱！还有吗？','这瓜保熟，我信你！','瓜已下肚，人已精神'],
+  kua:     ['真香！甜到蛀牙了！','被甜到了，今天值了','这颗糖我存着慢慢含','夸得我脸都红了！'],
+  miss:    ['心里暖暖的，也想你了','被惦记的感觉真好','这封信我收下了','鼻子有点酸，但很开心'],
+  rant:    ['辣得直冒汗，但好爽！','苦是苦了点，但懂你','这是今天的饭，我干了','吐完好受多了，对吧？'],
+  joke:    ['好冷……（打了个哆嗦）','笑不出来，但嘴角动了','冷到我了，回你一个哈欠','好烂！再来一个！'],
+  photo:   ['哇，看起来真不错！','这张我保存了！','现烤的就是香','已端上桌，细细品尝'],
+  here:    ['看到你在那儿，放心了','云干杯！照顾好自己','下次带上我！','已定位，隔空击掌'],
+  free:    ['随口一说也好听','收下了，慢慢回味','那就聊五毛钱的','这句话我记小本本上了'],
+  praise:  ['真香！甜到蛀牙了！','被甜到了，今天值了','这颗糖我存着慢慢含','夸得我脸都红了！'], /* 老数据兜底 */
 };
 const pick = arr => arr[Math.floor(Math.random() * arr.length)];
 
