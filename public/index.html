@@ -180,8 +180,9 @@
   /* 超长吃后感：默认一行省略，点击展开 */
   .meal .reaction.has.long{flex-wrap:nowrap}
   .meal .reaction.has.long .rtext{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
-  .meal .reaction.has.long.open{flex-wrap:wrap}
-  .meal .reaction.has.long.open .rtext{white-space:normal;word-break:break-word;min-width:100%}
+  .meal .reaction.has.long.open{flex-wrap:wrap;border-radius:14px}
+  .meal .reaction.has.long.open .rtext{white-space:normal;word-break:break-word;flex:0 1 auto;min-width:0}
+  .meal .reaction.has.long.open .rops{flex-basis:100%;margin-left:0;justify-content:flex-end}
   .meal .reaction .r-expand{flex-shrink:0;border:none;background:transparent;cursor:pointer;font-size:11.5px;color:var(--cocoa-soft);padding:1px 4px;border-radius:6px;opacity:.65;transition:opacity .15s}
   .meal .reaction .r-expand:hover{opacity:1;background:rgba(92,70,51,.08)}
   .meal .react-edit{margin-top:10px;background:#FFF6EA;border:1.5px dashed var(--peach);border-radius:var(--r-sm);padding:10px 12px;display:flex;flex-direction:column;gap:8px;animation:mealIn .3s ease}
@@ -793,8 +794,7 @@ function reactionBlock(m, isReceiver) {
     const mine = r.by === S.me.id;
     const long = r.text.length > 24;
     return `<div class="reaction has${long ? ' long' : ''}"><span class="mouth">😋</span><span class="rtext">${esc(r.text)}</span>
-      ${long ? `<button class="r-expand" type="button">展开 ▾</button>` : ''}
-      ${mine ? `<span class="rops"><button class="r-edit" title="改吃后感">✏️</button><button class="r-del" title="删吃后感">🗑️</button></span>` : ''}
+      <span class="rops">${long ? `<button class="r-expand" type="button">展开 ▾</button>` : ''}${mine ? `<button class="r-edit" title="改吃后感">✏️</button><button class="r-del" title="删吃后感">🗑️</button>` : ''}</span>
     </div>`;
   }
   if (isReceiver) return `<button class="reaction react-write" type="button"><span class="mouth">✍️</span> 写吃后感</button>`;
@@ -1375,8 +1375,11 @@ async function refreshTableOnly() {
     }
     S.tableFeeds = data.feeds;
     if (S.tab === 'table') {
-      // 饭桌上有正在展开的吃后感编辑区时，只更新数据不重渲染，避免轮询打断输入
-      if (!document.querySelector('.react-edit:not([hidden])')) renderTable();
+      // 饭桌上有正在展开的吃后感编辑区、或展开中的超长回复时，
+      // 只更新数据不重渲染，避免轮询打断输入 / 收回展开状态
+      const editing = document.querySelector('.react-edit:not([hidden])');
+      const expanded = document.querySelector('.reaction.has.long.open');
+      if (!editing && !expanded) renderTable();
     }
   } catch (e) { /* 忽略轮询错误 */ }
 }
