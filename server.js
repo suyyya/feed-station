@@ -16,17 +16,42 @@ const DATA_FILE = path.join(DATA_DIR, 'db.json');
 const UPLOAD_DIR = process.env.UPLOAD_DIR ? path.resolve(process.env.UPLOAD_DIR) : path.join(ROOT, 'uploads');
 const PUBLIC_DIR = path.join(ROOT, 'public');
 const PORT = process.env.PORT || 3789;
-const VERSION = '1.1.0';
+const VERSION = '1.2.0';
 
 fs.mkdirSync(DATA_DIR, { recursive: true });
 fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 
+/* ---------- 时间口径：全站固定北京时间（UTC+8） ----------
+ * 避免「服务器时区 ≠ 用户时区」导致日期错位：
+ * 例：Railway 容器默认 UTC，北京时间 0:00-8:00 的投喂若按服务器时区生成 dateKey 会落到前一天。
+ * 统一用 UTC+8 偏移手工计算，与服务器/浏览器时区无关。 */
+const CN_TZ = 8 * 3600 * 1000; // 北京时间 = UTC+8
+const cnKey = ts => { // 北京时间日期 key，如 2026-8-24
+  const d = new Date(ts + CN_TZ);
+  return `${d.getUTCFullYear()}-${d.getUTCMonth() + 1}-${d.getUTCDate()}`;
+};
+const cnDayStart = ts => { // 北京时间当天 0 点的时间戳
+  const d = new Date(ts + CN_TZ);
+  d.setUTCHours(0, 0, 0, 0);
+  return d.getTime() - CN_TZ;
+};
+
 /* ---------- 数据 ---------- */
-let db = { users: [], memberships: [], feeds: [] };
+let db = { users: [], memberships: [], feeds: [], logins: [] };
 if (fs.existsSync(DATA_FILE)) {
   try { db = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8')); } catch (e) { console.error('db 解析失败，使用空数据', e.message); }
 }
+if (!db.logins) db.logins = []; // 兼容升级前的旧 db.json
+if (!db.visits) db.visits = []; // 页面浏览打点（活跃统计用，兼容升级前的旧 db.json）
 const saveDb = () => fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2));
+// 自愈：历史 feeds 若 dateKey 非北京时间口径（旧版在 UTC 服务器上生成导致错位），按 ts 重算修正
+if (Array.isArray(db.feeds)) {
+  let healed = 0;
+  for (const f of db.feeds) {
+    if (f && typeof f.ts === 'number' && f.dateKey !== cnKey(f.ts)) { f.dateKey = cnKey(f.ts); healed++; }
+  }
+  if (healed > 0) { console.log(`[自愈] 修正 ${healed} 条 feeds 的 dateKey 为北京时间口径`); saveDb(); }
+}
 
 const uid = p => p + '_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 const hash = s => crypto.createHash('sha256').update(s).digest('hex');
@@ -75,10 +100,7 @@ const authUser = req => {
   return db.users.find(u => u.token === tk) || null;
 };
 const fmtUser = u => ({ id: u.id, name: u.name, sp: u.sp, inviteCode: u.inviteCode });
-const todayKey = ts => {
-  const d = new Date(ts);
-  return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
-};
+const todayKey = cnKey; // 北京时间日期 key（旧名保留，口径已固定北京时间）
 
 /* ---------- 路由 ---------- */
 const server = http.createServer(async (req, res) => {
@@ -94,6 +116,14 @@ const server = http.createServer(async (req, res) => {
       return res.end(fs.readFileSync(file));
     }
     return send(res, 404, { error: 'public/index.html 不存在' });
+  }
+  if (method === 'GET' && (p === '/admin' || p === '/admin.html')) {
+    const file = path.join(PUBLIC_DIR, 'admin.html');
+    if (fs.existsSync(file)) {
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-cache' });
+      return res.end(fs.readFileSync(file));
+    }
+    return send(res, 404, { error: 'public/admin.html 不存在' });
   }
   if (method === 'GET' && p.startsWith('/uploads/')) {
     const name = path.basename(p);
@@ -120,6 +150,7 @@ const server = http.createServer(async (req, res) => {
       if (db.users.some(u => u.name === n)) return send(res, 400, { error: '这名字已经在投喂站登记过啦，直接登录试试？' });
       const user = { id: uid('u'), name: n, pass: hash(pass), sp: sp || '🐶', inviteCode: genCode(), token: token(), createdAt: Date.now() };
       db.users.push(user);
+      db.logins.push({ userId: user.id, ts: Date.now() }); // 注册即首次活跃
       saveDb();
       return send(res, 200, { token: user.token, user: fmtUser(user) });
     }
@@ -130,8 +161,55 @@ const server = http.createServer(async (req, res) => {
       const user = db.users.find(u => u.name === (name || '').trim());
       if (!user || user.pass !== hash(pass || '')) return send(res, 401, { error: '名字或密码不对，再试试' });
       user.token = token();
+      db.logins.push({ userId: user.id, ts: Date.now() });
       saveDb();
       return send(res, 200, { token: user.token, user: fmtUser(user) });
+    }
+
+    /* ---- 管理员统计（ADMIN_TOKEN 鉴权，仅聚合指标，不暴露任何用户明细） ---- */
+    if (p === '/api/admin/stats' && method === 'GET') {
+      const key = url.searchParams.get('key') || req.headers['x-admin-key'] || '';
+      if (!process.env.ADMIN_TOKEN || key !== process.env.ADMIN_TOKEN) return send(res, 403, { error: '无权限' });
+      const dayStart = cnDayStart; // 北京时间日界
+      const todayStart = dayStart(Date.now());
+      const loginsToday = db.logins.filter(l => l.ts >= todayStart);
+      const feedsToday = db.feeds.filter(f => f.ts >= todayStart);
+      const visitsToday = db.visits.filter(v => v.ts >= todayStart);
+      // 活跃 = 当天 登录 ∪ 投喂(投喂者/被投喂者) ∪ 页面浏览 的去重用户
+      const dau = new Set([
+        ...loginsToday.map(l => l.userId),
+        ...feedsToday.map(f => f.ownerId),
+        ...feedsToday.map(f => f.memberId),
+        ...visitsToday.map(v => v.userId),
+      ]).size;
+      const feedUsersToday = new Set(feedsToday.map(f => f.ownerId)).size;
+      const feedCountToday = feedsToday.length;
+      const trend = [];
+      for (let i = 29; i >= 0; i--) {
+        const ds = todayStart - i * 86400000;
+        const de = ds + 86400000;
+        const l = db.logins.filter(x => x.ts >= ds && x.ts < de);
+        const f = db.feeds.filter(x => x.ts >= ds && x.ts < de);
+        const v = db.visits.filter(x => x.ts >= ds && x.ts < de);
+        trend.push({
+          date: todayKey(ds),
+          dau: new Set([
+            ...l.map(x => x.userId),
+            ...f.map(x => x.ownerId),
+            ...f.map(x => x.memberId),
+            ...v.map(x => x.userId),
+          ]).size,
+          feedUsers: new Set(f.map(x => x.ownerId)).size,
+          feedCount: f.length,
+        });
+      }
+      return send(res, 200, {
+        totalUsers: db.users.length,
+        dau, feedUsersToday, feedCountToday,
+        today: todayKey(Date.now()),
+        trend,
+        updatedAt: Date.now(),
+      });
     }
 
     /* ---- 鉴权 ---- */
@@ -157,6 +235,20 @@ const server = http.createServer(async (req, res) => {
         })
         .filter(Boolean);
       return send(res, 200, { user: fmtUser(me), members, joined });
+    }
+
+    /* ---- 页面浏览打点（活跃统计用） ---- */
+    if (p === '/api/visit' && method === 'POST') {
+      const { page } = await readBody(req);
+      const vPage = ['station', 'table'].includes(page) ? page : null;
+      if (!vPage) return send(res, 400, { error: 'page 参数不对' });
+      // 同页 60 秒内不重复记（前端也会节流，这里兜底防刷）
+      const last = db.visits.filter(v => v.userId === me.id && v.page === vPage).pop();
+      if (!last || Date.now() - last.ts > 60000) {
+        db.visits.push({ userId: me.id, page: vPage, ts: Date.now() });
+        saveDb();
+      }
+      return send(res, 200, { ok: true });
     }
 
     /* ---- 加入投喂站 ---- */

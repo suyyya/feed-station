@@ -317,6 +317,7 @@
   footer .more-link{margin-top:8px;border:none;background:none;cursor:pointer;font-family:inherit;font-size:11.5px;
     color:var(--cocoa-soft);opacity:.75;text-decoration:underline;text-underline-offset:3px;transition:opacity .15s,color .15s}
   footer .more-link:hover{opacity:1;color:var(--peach-deep)}
+  footer .more-link + .more-link{margin-left:16px}
 
   .flying{position:fixed;z-index:999;font-size:42px;pointer-events:none;filter:drop-shadow(0 6px 10px rgba(0,0,0,.2));
     transition:transform .85s cubic-bezier(.34,.7,.3,1),opacity .85s;will-change:transform}
@@ -365,7 +366,7 @@
   <div class="auth-foot">
     <div>做菜的人是<b>饲养员</b>，被喂的人是<b>干饭人</b> —— 被惦记，就是最香的一口 🍜</div>
     <div class="sig">🍳 投喂站 · 用心意喂饱每一个重要的人</div>
-    <div class="ver">v1.1.0 · 来自一只小派</div>
+    <div class="ver">v1.2.0 · 来自一只小派</div>
     <button class="auth-more" id="authMore">关于 · 更新日志</button>
   </div>
 </div>
@@ -456,8 +457,9 @@
   <footer>
     <div>做菜的人是<b>饲养员</b>，被喂的人是<b>干饭人</b> —— 被惦记，就是最香的一口 🍜</div>
     <div class="sig">🍳 投喂站 · 用心意喂饱每一个重要的人</div>
-    <div class="ver">v1.1.0 · 来自一只小派</div>
+    <div class="ver">v1.2.0 · 来自一只小派</div>
     <button class="more-link" id="moreBtn">关于 · 更新日志</button>
+    <a class="more-link" id="adminLink" href="/admin" style="display:none">📊 数据面板</a>
   </footer>
 </div>
 
@@ -515,6 +517,7 @@
     <div class="more-sec">
       <div class="more-title">📖 更新日志</div>
       <div class="more-log">
+        <div class="ml-item"><b>v1.2.0</b><span>2026-08-24</span><p>后台装了个小账本，数数这桌饭喂出去多少顿 📊</p></div>
         <div class="ml-item"><b>v1.1.0</b><span>2026-08-21</span><p>上新几道硬菜，做完这桌就等下班去打洲 🎮</p></div>
         <div class="ml-item"><b>v1.0.1</b><span>2026-08-19</span><p>修了几个小 bug，奖励自己一杯续命咖啡 ☕</p></div>
         <div class="ml-item"><b>v1.0.0</b><span>2026-08-19</span><p>投喂站正式开张！小派摸鱼大业圆满达成 🎉</p></div>
@@ -641,10 +644,17 @@ function logout() {
 }
 
 /* ================= 初始化 ================= */
+// 数据面板入口：仅当浏览器记住了管理员 Token 时才显示
+function updateAdminLink() {
+  const link = $('#adminLink');
+  if (link) link.style.display = localStorage.getItem('fs_admin_key') ? 'inline' : 'none';
+}
 async function initApp() {
   $('#authScreen').style.display = 'none';
   $('#app').hidden = false;
+  updateAdminLink();
   await refreshAll();
+  trackVisit(S.tab || 'station'); // 进入应用时上报当前页浏览
 }
 
 async function refreshAll() {
@@ -665,8 +675,11 @@ async function refreshAll() {
 /* ================= 渲染 ================= */
 const esc = s => s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const linkify = s => s.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
-const fmtTime = ts => { const d = new Date(ts); const p = n => String(n).padStart(2,'0'); return `${p(d.getHours())}:${p(d.getMinutes())}`; };
-const dateKeyOf = d => `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
+/* 全站时间口径固定北京时间（UTC+8），与服务器 dateKey 一致，避免浏览器时区（如挂代理）导致日期错位 */
+const CN_TZ = 8 * 3600 * 1000;
+const bjOf = ts => new Date(ts + CN_TZ); // 北京时间视角的 Date
+const fmtTime = ts => { const d = bjOf(ts); const p = n => String(n).padStart(2,'0'); return `${p(d.getUTCHours())}:${p(d.getUTCMinutes())}`; };
+const dateKeyOf = d => { const b = bjOf(d.getTime()); return `${b.getUTCFullYear()}-${b.getUTCMonth()+1}-${b.getUTCDate()}`; };
 const todayKeyStr = () => dateKeyOf(new Date());
 
 function renderAll() {
@@ -1059,9 +1072,9 @@ function openTicket(id, m) {
   let content = m.text || '';
   if (m.media?.type === 'image') content = (content ? content + '\n' : '') + '【照片】';
 
-  const d = new Date(m.ts);
+  const d = bjOf(m.ts);
   const p = n => String(n).padStart(2, '0');
-  const dateStr = `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日 ${p(d.getHours())}:${p(d.getMinutes())}`;
+  const dateStr = `${d.getUTCFullYear()}年${d.getUTCMonth()+1}月${d.getUTCDate()}日 ${p(d.getUTCHours())}:${p(d.getUTCMinutes())}`;
 
   $('#ticketBody').innerHTML = `
     <div class="t-head">🍳 投喂小票</div>
@@ -1123,9 +1136,9 @@ function drawTicketPNG(m) {
   const { whoLine, fromLine } = ticketPerson(m);
   let content = m.text || '';
   if (m.media?.type === 'image') content = (content ? content + '\n' : '') + '【照片】';
-  const d = new Date(m.ts);
+  const d = bjOf(m.ts);
   const p = n => String(n).padStart(2, '0');
-  const dateStr = `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日 ${p(d.getHours())}:${p(d.getMinutes())}`;
+  const dateStr = `${d.getUTCFullYear()}年${d.getUTCMonth()+1}月${d.getUTCDate()}日 ${p(d.getUTCHours())}:${p(d.getUTCMinutes())}`;
 
   const W = 420, PAD = 34;
   const SCALE = 3; // 高清输出：3 倍像素密度，导出后文字/边框不发虚
@@ -1222,6 +1235,17 @@ function switchTab(t) {
   $('#stationTab').hidden = t !== 'station';
   $('#tableTab').hidden = t !== 'table';
   if (t === 'table') { S.selDate = todayKeyStr(); renderTable(); }
+  trackVisit(t); // 切页浏览打点
+}
+
+/* ================= 页面浏览打点 ================= */
+let lastVisit = { page: '', ts: 0 };
+function trackVisit(page) {
+  if (!S.token) return; // 未登录不上报
+  const now = Date.now();
+  if (lastVisit.page === page && now - lastVisit.ts < 60000) return; // 同页 60s 节流
+  lastVisit = { page, ts: now };
+  api('/api/visit', { method: 'POST', body: JSON.stringify({ page }) }).catch(() => {});
 }
 
 /* ================= 轮询（被投喂提醒） ================= */
@@ -1299,6 +1323,7 @@ document.addEventListener('keydown', e => {
 /* ================= 启动 ================= */
 renderAuthSpecies();
 setAuthMode('login');
+updateAdminLink();
 if (S.token) {
   initApp().catch(() => logout());
 } else {

@@ -11,6 +11,38 @@
 
 ---
 
+## 1.2.0 — 2026-08-24
+
+### 更新内容（用户视角）
+
+1. 新增**管理员数据面板**（站长专用）：输入管理 Token 后可查看累计用户数、日活跃用户数、日投喂人数、日投喂次数，以及近 30 天三项趋势柱状图（鼠标悬停柱子可查看每日数值）
+2. 主站页脚新增「📊 数据面板」入口——仅对验证过 Token 的管理员可见，普通用户不显示
+3. 修复**时区错位**：所有日期/时间统一按北京时间计算（此前线上容器时区为 UTC，北京时间 0:00-8:00 的投喂会被记到前一天）；历史错位数据在服务启动时自动修正
+4. 日活跃统计口径优化：从「当天登录过的人数」改为「当天登录/投喂/浏览的去重人数」，更贴近真实活跃
+
+### 技术变更（开发者视角）
+
+- `server.js`：新增 `db.logins`（登录/注册打点，兼容旧数据）、`POST /api/visit`（浏览打点，同页 60s 节流）、`GET /api/admin/stats`（`ADMIN_TOKEN` 环境变量鉴权，支持 `?key=` 或 `x-admin-key` 头，仅返回聚合指标不暴露明细）、`/admin` 静态路由
+- 时间口径：新增 `cnKey()`/`cnDayStart()` 强制按 UTC+8 计算北京时间，`todayKey` 与 admin 统计日界全部改用，与服务器时区无关；启动时自愈修正历史 feeds 的 `dateKey` 错位（按 ts 重算并落盘）
+- DAU 口径：登录 ∪ 投喂（owner+member）∪ 浏览的去重用户数（原仅登录动作）
+- `public/admin.html`（新增）：Token 验证成功存入 `localStorage['fs_admin_key']`，再次打开自动加载、可一键清除；4 指标卡 + 3 个 CSS 趋势柱状图 + hover 浮层（日期·数值）+ 口径说明标注
+- `public/index.html`：新增 `trackVisit()` 埋点（进入应用/切换 tab 上报）；页脚「数据面板」入口按 `localStorage` 是否有 `fs_admin_key` 显隐；`fmtTime`/`dateKeyOf`/`todayKeyStr`/小票日期全部锁定北京时间
+- `server.js` `VERSION` 升为 `1.2.0`，前端 footer 同步显示
+
+### 变更文件
+
+- `server.js`
+- `public/index.html`
+- `public/admin.html`（新增）
+- `CHANGELOG.md`
+
+### 上线方式
+
+- 本地 commit + tag `v1.2.0` → push GitHub → Railway 自动部署（注意避开高峰时段：中国 14:00-次日 2:00；若在高峰窗口内 push，需等凌晨 2 点后在 Railway 手动 Redeploy 一次生效）
+- **部署前需在 Railway 配置环境变量 `ADMIN_TOKEN`**（否则管理面板接口一直 403）；建议同时保留 `TZ=Asia/Shanghai`（代码已锁北京时间，此变量非必需但无害）
+
+---
+
 ## 1.1.0 — 2026-08-21
 
 ### 更新内容（用户视角）

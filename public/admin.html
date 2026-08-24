@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>投喂站 · 数据面板</title>
+<style>
+  :root{
+    --bg:#FFF5ED; --paper:#FFFFFF; --peach:#FF8A5C; --peach-deep:#F2723D;
+    --cocoa:#4A3128; --cocoa-soft:#8A6A5C; --line:#F0DCC8; --r:18px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+    background:linear-gradient(160deg,#FFF8F1,#FFF1E6);color:var(--cocoa);min-height:100vh;padding:32px 18px}
+  .wrap{max-width:560px;margin:0 auto}
+  h1{font-size:24px;margin:0 0 4px}
+  .sub{color:var(--cocoa-soft);font-size:13px;margin:0 0 22px}
+  .gate{display:flex;gap:10px;margin-bottom:10px}
+  .gate input{flex:1;padding:12px 14px;border:1.5px solid var(--line);border-radius:999px;
+    font-size:14px;outline:none;background:var(--paper)}
+  .gate input:focus{border-color:var(--peach)}
+  .gate button{border:none;background:var(--peach);color:#fff;font-weight:700;font-size:14px;
+    padding:0 22px;border-radius:999px;cursor:pointer;transition:.15s}
+  .gate button:hover{background:var(--peach-deep)}
+  .err{color:#D9534F;font-size:13px;min-height:18px;margin-bottom:8px}
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:26px}
+  .card{background:var(--paper);border:1.5px solid var(--line);border-radius:var(--r);
+    padding:18px 16px;box-shadow:0 10px 26px rgba(201,111,74,.10)}
+  .num{font-size:34px;font-weight:800;line-height:1;color:var(--peach-deep)}
+  .lab{font-size:12.5px;color:var(--cocoa-soft);margin-top:8px;line-height:1.4}
+  .trend h3{font-size:15px;margin:0 0 14px}
+  .chart-box{background:var(--paper);border:1.5px solid var(--line);border-radius:var(--r);
+    padding:14px 14px 8px;margin-bottom:14px;box-shadow:0 10px 26px rgba(201,111,74,.10)}
+  .chart-title{font-size:12.5px;color:var(--cocoa-soft);margin-bottom:8px}
+  .chart{display:flex;align-items:flex-end;gap:2px;height:88px}
+  .bar-wrap{flex:1;height:100%;position:relative;display:flex;align-items:flex-end;cursor:pointer}
+  .bar{width:100%;background:linear-gradient(180deg,var(--peach),#FFB58C);border-radius:3px 3px 0 0;min-height:2px;transition:.2s}
+  .bar-wrap:hover .bar{background:var(--peach-deep)}
+  .tip{position:absolute;bottom:calc(100% + 5px);left:50%;transform:translateX(-50%);
+    background:rgba(74,49,40,.93);color:#fff;font-size:11px;line-height:1;padding:5px 8px;
+    border-radius:7px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .12s;z-index:20}
+  .bar-wrap:hover .tip{opacity:1}
+  .foot{text-align:center;color:var(--cocoa-soft);font-size:11.5px;margin-top:18px}
+  .forget{text-align:center;font-size:11px;color:var(--cocoa-soft);opacity:.7;margin-top:6px;cursor:pointer;display:none}
+  .forget:hover{opacity:1;color:var(--peach-deep)}
+  .note{font-size:11.5px;color:var(--cocoa-soft);margin:-6px 0 12px;line-height:1.55}
+  .hidden{display:none}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>🍳 投喂站 · 数据面板</h1>
+    <p class="sub">仅展示聚合指标，不暴露任何用户明细</p>
+    <div class="gate">
+      <input id="keyInput" type="password" placeholder="输入管理员 Token" autocomplete="off">
+      <button id="goBtn">查看</button>
+    </div>
+    <div class="err" id="err"></div>
+    <div class="cards hidden" id="cards">
+      <div class="card"><div class="num" id="cTotal">—</div><div class="lab">累计用户数<br>注册/登录过的总人数</div></div>
+      <div class="card"><div class="num" id="cDau">—</div><div class="lab">日活跃用户数<br>今日登录/投喂/浏览去重人数</div></div>
+      <div class="card"><div class="num" id="cFeedUsers">—</div><div class="lab">日投喂人数<br>今日投喂过的人数</div></div>
+      <div class="card"><div class="num" id="cFeedCount">—</div><div class="lab">日投喂次数<br>今日所有投喂次数</div></div>
+    </div>
+    <div class="trend hidden" id="trend">
+      <h3>近 30 天趋势</h3>
+      <div class="note">注：部署生效日之前的 DAU 为「投喂活跃」口径（仅统计投喂参与用户），生效日起为「登录+投喂+浏览」全行为口径；更早的纯浏览用户无法追溯。</div>
+      <div class="chart-box"><div class="chart-title">日活跃用户数</div><div class="chart" id="chartDau"></div></div>
+      <div class="chart-box"><div class="chart-title">日投喂人数</div><div class="chart" id="chartFu"></div></div>
+      <div class="chart-box"><div class="chart-title">日投喂次数</div><div class="chart" id="chartFc"></div></div>
+    </div>
+    <div class="foot" id="foot"></div>
+    <div class="forget" id="forgetBtn">已记住 Token · 点击清除</div>
+  </div>
+<script>
+  const $ = s => document.querySelector(s);
+  function renderChart(id, vals, dates){
+    const box = document.getElementById(id);
+    box.innerHTML = '';
+    const max = Math.max(1, ...vals);
+    vals.forEach((v, i) => {
+      const wrap = document.createElement('div');
+      wrap.className = 'bar-wrap';
+      const bar = document.createElement('div');
+      bar.className = 'bar';
+      bar.style.height = (v / max * 100) + '%';
+      const tip = document.createElement('div');
+      tip.className = 'tip';
+      const d = (dates[i] || '').split('-');
+      const label = d.length >= 3 ? d[1] + '-' + d[2] : (dates[i] || '');
+      tip.textContent = label + ' · ' + v;
+      wrap.appendChild(bar);
+      wrap.appendChild(tip);
+      box.appendChild(wrap);
+    });
+  }
+  async function load(){
+    const key = $('#keyInput').value.trim();
+    if(!key){ $('#err').textContent = '请输入 Token'; return; }
+    $('#err').textContent = '加载中…';
+    try{
+      const r = await fetch('/api/admin/stats', { headers: { 'x-admin-key': key } });
+      const j = await r.json();
+      if(!r.ok){ $('#err').textContent = j.error || '无权限'; $('#cards').classList.add('hidden'); $('#trend').classList.add('hidden'); return; }
+      localStorage.setItem('fs_admin_key', key); // 记住 Token：主站 footer 的数据面板入口据此显隐
+      $('#forgetBtn').style.display = 'block';
+      $('#err').textContent = '';
+      $('#cards').classList.remove('hidden');
+      $('#trend').classList.remove('hidden');
+      $('#cTotal').textContent = j.totalUsers;
+      $('#cDau').textContent = j.dau;
+      $('#cFeedUsers').textContent = j.feedUsersToday;
+      $('#cFeedCount').textContent = j.feedCountToday;
+      renderChart('chartDau', j.trend.map(t => t.dau), j.trend.map(t => t.date));
+      renderChart('chartFu', j.trend.map(t => t.feedUsers), j.trend.map(t => t.date));
+      renderChart('chartFc', j.trend.map(t => t.feedCount), j.trend.map(t => t.date));
+      const first = j.trend[0] ? j.trend[0].date : '';
+      $('#foot').textContent = '统计日期 ' + j.today + ' · 趋势区间 ' + first + ' ~ ' + j.today + ' · 更新于 ' + new Date(j.updatedAt).toLocaleString('zh-CN');
+    }catch(e){
+      $('#err').textContent = '请求失败：' + e.message;
+    }
+  }
+  $('#goBtn').onclick = load;
+  $('#keyInput').addEventListener('keydown', e => { if(e.key === 'Enter') load(); });
+  $('#forgetBtn').onclick = () => {
+    localStorage.removeItem('fs_admin_key');
+    $('#forgetBtn').style.display = 'none';
+    $('#keyInput').value = '';
+    $('#keyInput').focus();
+    $('#err').textContent = '已清除，下次访问需重新输入 Token';
+  };
+  // 已记住 Token 时自动加载，从主站 footer 点进来直接出数据
+  const saved = localStorage.getItem('fs_admin_key');
+  if(saved){
+    $('#keyInput').value = saved;
+    load();
+  }
+</script>
+</body>
+</html>
