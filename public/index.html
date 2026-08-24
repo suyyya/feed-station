@@ -1034,14 +1034,28 @@ function compressImage(file) {
 }
 
 /* ================= 小票 ================= */
+/* 小票人物行：投喂对象 = 被投喂的人（memberId），来自 = 投喂的人（ownerId）
+   - 我的投喂站记录：ownerId=我、memberId=朋友 → 投喂对象=朋友、来自=我的昵称
+   - 我的饭桌记录：memberId=我、ownerId=朋友(feederName) → 投喂对象=我的昵称、来自=朋友 */
+function ticketPerson(m) {
+  const meId = S.me && S.me.id;
+  const meLine = S.me ? { sp: S.me.sp, name: S.me.name } : null;
+  let to, from;
+  if (m.memberId === meId) to = meLine ? { ...meLine } : { sp: '🙋', name: '你' };
+  else {
+    const f = S.members.find(x => x.id === m.memberId)
+      || (m.memberName ? { sp: m.memberSp, name: m.memberName } : null);
+    to = f ? { sp: f.sp, name: f.name } : { sp: '👻', name: '神秘人' };
+  }
+  if (m.ownerId === meId) from = meLine ? { ...meLine } : { sp: '🍳', name: '你' };
+  else from = m.feederName ? { sp: m.feederSp, name: m.feederName } : { sp: '👻', name: '神秘人' };
+  return { whoLine: `${to.sp} ${to.name}`, fromLine: `${from.sp} ${from.name}` };
+}
 function openTicket(id, m) {
   if (!m) return;
   S.ticketId = id;
   const fd = foodOf(m.foodId);
-  const friend = S.members.find(x => x.id === m.memberId);
-  const feeder = m.feederName;
-  const whoLine = friend ? `${friend.sp} ${friend.name}` : (feeder ? `${m.feederSp} ${feeder}` : '—');
-  const fromLine = m.ownerId === S.me?.id ? '你（饲养员）' : (feeder ? m.feederSp + ' ' + feeder : '—');
+  const { whoLine, fromLine } = ticketPerson(m);
   let content = m.text || '';
   if (m.media?.type === 'image') content = (content ? content + '\n' : '') + '【照片】';
 
@@ -1106,10 +1120,7 @@ function roundRectPath(c, x, y, w, h, r) {
 }
 function drawTicketPNG(m) {
   const fd = foodOf(m.foodId);
-  const friend = S.members.find(x => x.id === m.memberId);
-  const feeder = m.feederName;
-  const whoLine = friend ? `${friend.sp} ${friend.name}` : (feeder ? `${m.feederSp} ${feeder}` : '—');
-  const fromLine = m.ownerId === S.me?.id ? '你（饲养员）' : (feeder ? m.feederSp + ' ' + feeder : '—');
+  const { whoLine, fromLine } = ticketPerson(m);
   let content = m.text || '';
   if (m.media?.type === 'image') content = (content ? content + '\n' : '') + '【照片】';
   const d = new Date(m.ts);
