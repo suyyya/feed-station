@@ -168,6 +168,33 @@
   .meal .ops button{border:none;background:#FFF1E3;color:var(--cocoa-soft);cursor:pointer;width:26px;height:26px;
     border-radius:8px;font-size:13px;display:flex;align-items:center;justify-content:center;transition:background .15s}
   .meal .ops button:hover{background:var(--peach);color:#fff}
+  /* 吃后感：三态（写/等/已有）+ 内联编辑 */
+  .meal .reaction.is-none{opacity:.55;background:#F6EFE7;border-color:var(--line);color:var(--cocoa-soft)}
+  .meal .reaction.react-write{cursor:pointer;border-style:solid;border-color:var(--peach);background:#FFF1E3;color:var(--peach-deep);font-family:inherit;transition:background .15s,transform .15s}
+  .meal .reaction.react-write:hover{background:var(--peach);color:#fff;transform:translateY(-1px)}
+  .meal .reaction.has{display:flex;flex-wrap:wrap;align-items:flex-start;gap:6px;flex:1 1 auto;min-width:0}
+  .meal .reaction .rtext{white-space:normal;word-break:break-word;flex:1 1 auto;line-height:1.55}
+  .meal .reaction .rops{margin-left:auto;display:inline-flex;gap:2px;align-items:flex-start;flex-shrink:0}
+  .meal .reaction .rops button{border:none;background:transparent;cursor:pointer;font-size:12px;padding:0 3px;border-radius:6px;opacity:.55;transition:opacity .15s}
+  .meal .reaction .rops button:hover{opacity:1}
+  /* 超长吃后感：默认一行省略，点击展开 */
+  .meal .reaction.has.long{flex-wrap:nowrap}
+  .meal .reaction.has.long .rtext{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+  .meal .reaction.has.long.open{flex-wrap:wrap}
+  .meal .reaction.has.long.open .rtext{white-space:normal;word-break:break-word;min-width:100%}
+  .meal .reaction .r-expand{flex-shrink:0;border:none;background:transparent;cursor:pointer;font-size:11.5px;color:var(--cocoa-soft);padding:1px 4px;border-radius:6px;opacity:.65;transition:opacity .15s}
+  .meal .reaction .r-expand:hover{opacity:1;background:rgba(92,70,51,.08)}
+  .meal .react-edit{margin-top:10px;background:#FFF6EA;border:1.5px dashed var(--peach);border-radius:var(--r-sm);padding:10px 12px;display:flex;flex-direction:column;gap:8px;animation:mealIn .3s ease}
+  .meal .react-edit .r-quick{display:flex;flex-wrap:wrap;gap:6px}
+  .meal .react-edit .r-q{border:1.5px solid var(--line);background:#fff;color:var(--cocoa);font-size:12px;padding:4px 10px;border-radius:999px;cursor:pointer;transition:all .15s;font-family:inherit}
+  .meal .react-edit .r-q:hover{border-color:var(--peach);color:var(--peach-deep);background:#FFF1E3}
+  .meal .react-edit textarea{width:100%;border:1.5px solid var(--line);border-radius:8px;background:#FFFDF8;padding:8px 10px;font-size:13px;line-height:1.6;resize:vertical;min-height:52px;outline:none;font-family:inherit;box-sizing:border-box}
+  .meal .react-edit textarea:focus{border-color:var(--peach)}
+  .meal .react-edit .r-btns{display:flex;gap:8px;align-items:center}
+  .meal .react-edit .r-save{border:none;background:var(--peach-deep);color:#fff;font-size:12.5px;font-weight:700;padding:6px 14px;border-radius:999px;cursor:pointer;transition:filter .15s}
+  .meal .react-edit .r-save:hover{filter:brightness(1.08)}
+  .meal .react-edit .r-cancel{border:none;background:transparent;color:var(--cocoa-soft);font-size:12.5px;cursor:pointer;padding:6px 8px}
+  [hidden]{display:none!important}
 
   .empty{text-align:center;padding:40px 20px;color:var(--cocoa-soft)}
   .empty .big{font-size:48px;margin-bottom:10px;animation:emptyBob 3.2s ease-in-out infinite;display:inline-block}
@@ -366,7 +393,7 @@
   <div class="auth-foot">
     <div>做菜的人是<b>饲养员</b>，被喂的人是<b>干饭人</b> —— 被惦记，就是最香的一口 🍜</div>
     <div class="sig">🍳 投喂站 · 用心意喂饱每一个重要的人</div>
-    <div class="ver">v1.2.0 · 来自一只小派</div>
+    <div class="ver">v1.3.0 · 来自一只小派</div>
     <button class="auth-more" id="authMore">关于 · 更新日志</button>
   </div>
 </div>
@@ -457,7 +484,7 @@
   <footer>
     <div>做菜的人是<b>饲养员</b>，被喂的人是<b>干饭人</b> —— 被惦记，就是最香的一口 🍜</div>
     <div class="sig">🍳 投喂站 · 用心意喂饱每一个重要的人</div>
-    <div class="ver">v1.2.0 · 来自一只小派</div>
+    <div class="ver">v1.3.0 · 来自一只小派</div>
     <button class="more-link" id="moreBtn">关于 · 更新日志</button>
     <a class="more-link" id="adminLink" href="/admin" style="display:none">📊 数据面板</a>
   </footer>
@@ -517,6 +544,7 @@
     <div class="more-sec">
       <div class="more-title">📖 更新日志</div>
       <div class="more-log">
+        <div class="ml-item"><b>v1.3.0</b><span>2026-08-24</span><p>吃后感可以自己写了，想夸想吐槽都行 ✍️</p></div>
         <div class="ml-item"><b>v1.2.0</b><span>2026-08-24</span><p>后台装了个小账本，数数这桌饭喂出去多少顿 📊</p></div>
         <div class="ml-item"><b>v1.1.0</b><span>2026-08-21</span><p>上新几道硬菜，做完这桌就等下班去打洲 🎮</p></div>
         <div class="ml-item"><b>v1.0.1</b><span>2026-08-19</span><p>修了几个小 bug，奖励自己一杯续命咖啡 ☕</p></div>
@@ -560,6 +588,17 @@ const FOODS = [
 ];
 /* 老数据映射：v1.0.x 的旧类目归并到新类目，历史投喂显示不乱 */
 const FOOD_ALIAS = { praise:'kua', compliment:'kua', link:'free', file:'free' };
+/* 吃后感快捷短语：接收方写吃后感时的推荐话术，可一键填充再修改（原服务端随机话术池降级为推荐） */
+const REACTIONS = {
+  gossip: ['瓜很甜，籽有点多，细节不够！','吃瓜吃到饱！还有吗？','这瓜保熟，我信你！','瓜已下肚，人已精神'],
+  kua:    ['真香！甜到蛀牙了！','被甜到了，今天值了','这颗糖我存着慢慢含','夸得我脸都红了！'],
+  miss:   ['心里暖暖的，也想你了','被惦记的感觉真好','这封信我收下了','鼻子有点酸，但很开心'],
+  rant:   ['辣得直冒汗，但好爽！','苦是苦了点，但懂你','这是今天的饭，我干了','吐完好受多了，对吧？'],
+  joke:   ['好冷……（打了个哆嗦）','笑不出来，但嘴角动了','冷到我了，回你一个哈欠','好烂！再来一个！'],
+  photo:  ['哇，看起来真不错！','这张我保存了！','现烤的就是香','已端上桌，细细品尝'],
+  here:   ['看到你在那儿，放心了','云干杯！照顾好自己','下次带上我！','已定位，隔空击掌'],
+  free:   ['随口一说也好听','收下了，慢慢回味','那就聊五毛钱的','这句话我记小本本上了'],
+};
 function foodOf(id) {
   const mapped = FOOD_ALIAS[id] || id;
   return FOODS.find(f => f.id === mapped) || FOODS[0];
@@ -744,12 +783,42 @@ function checkCanFeed() {
   $('#feedBtn').disabled = !ok;
 }
 
+/* 吃后感区块三态：
+ * 已有 → 😋 话术（作者本人可见 ✏️/🗑️）
+ * 无 + 我是接收方 → 「✍️ 写吃后感」按钮
+ * 无 + 我是投喂方 → 「等 ta 吃一口…」 */
+function reactionBlock(m, isReceiver) {
+  const r = m.reaction;
+  if (r && typeof r === 'object' && r.text) {
+    const mine = r.by === S.me.id;
+    const long = r.text.length > 24;
+    return `<div class="reaction has${long ? ' long' : ''}"><span class="mouth">😋</span><span class="rtext">${esc(r.text)}</span>
+      ${long ? `<button class="r-expand" type="button">展开 ▾</button>` : ''}
+      ${mine ? `<span class="rops"><button class="r-edit" title="改吃后感">✏️</button><button class="r-del" title="删吃后感">🗑️</button></span>` : ''}
+    </div>`;
+  }
+  if (isReceiver) return `<button class="reaction react-write" type="button"><span class="mouth">✍️</span> 写吃后感</button>`;
+  return `<div class="reaction is-none"><span class="mouth">😋</span> 等 ta 吃一口…</div>`;
+}
+/* 吃后感内联编辑区（仅接收方渲染，初始隐藏，点「写吃后感」/「✏️」后展开） */
+function reactionEditor(fd) {
+  const quicks = (REACTIONS[fd.id] || []).map(q => `<button class="r-q" type="button">${esc(q)}</button>`).join('');
+  return `<div class="react-edit" hidden>
+    ${quicks ? `<div class="r-quick">${quicks}</div>` : ''}
+    <textarea maxlength="200" placeholder="吃完这口，想说点什么…"></textarea>
+    <div class="r-btns">
+      <button class="r-save" type="button">✅ 保存吃后感</button>
+      <button class="r-cancel" type="button">取消</button>
+    </div>
+  </div>`;
+}
 function mealCard(m, opts = {}) {
   const fd = foodOf(m.foodId);
   let content = '';
   if (m.media?.type === 'image') content += `<div class="media"><img src="${m.media.url}" alt="投喂的照片"></div>`;
   if (m.text) content += `<div class="content">${linkify(esc(m.text))}</div>`;
   const who = opts.who ? `<span class="who">${opts.who}</span>` : '';
+  const isReceiver = !!(S.me && m.memberId === S.me.id);
   return `<div class="meal" data-id="${m.id}">
     <div class="top">
       <span class="dish-emoji">${fd.emoji}</span>
@@ -760,12 +829,13 @@ function mealCard(m, opts = {}) {
     </div>
     ${content}
     <div class="foot">
-      <div class="reaction"><span class="mouth">😋</span> ${esc(m.reaction)}</div>
+      ${reactionBlock(m, isReceiver)}
       <div class="ops">
         <button class="share" title="生成投喂小票">🧾</button>
         <button class="del" title="撤下这盘菜">🗑️</button>
       </div>
     </div>
+    ${isReceiver ? reactionEditor(fd) : ''}
   </div>`;
 }
 
@@ -782,6 +852,44 @@ function bindMealOps(container, feeds) {
         refreshAll();
       } catch (e) { toast(e.message); }
     };
+    /* ---- 吃后感：写 / 编辑 / 删除 / 保存 / 取消 / 快捷短语 ---- */
+    const write = el.querySelector('.react-write');
+    const edit = el.querySelector('.react-edit');
+    const hasBlock = el.querySelector('.reaction.has');
+    const showEdit = () => { if (edit) edit.hidden = false; const ta = edit && edit.querySelector('textarea'); if (ta) ta.focus(); };
+    if (write) write.onclick = () => { write.hidden = true; showEdit(); };
+    const expBtn = el.querySelector('.r-expand');
+    if (expBtn) expBtn.onclick = () => {
+      const open = hasBlock.classList.toggle('open');
+      expBtn.textContent = open ? '收起 ▴' : '展开 ▾';
+    };
+    const editBtn = el.querySelector('.r-edit');
+    if (editBtn) editBtn.onclick = () => { if (hasBlock) hasBlock.hidden = true; if (edit) edit.querySelector('textarea').value = (m.reaction && m.reaction.text) || ''; showEdit(); };
+    const delBtn = el.querySelector('.r-del');
+    if (delBtn) delBtn.onclick = async () => {
+      if (!confirm('删掉这条吃后感？')) return;
+      try {
+        await api('/api/feed/' + id + '/reaction', { method: 'DELETE' });
+        toast('吃后感删掉了，等 ta 再写 🍽️');
+        refreshAll();
+      } catch (e) { toast(e.message); }
+    };
+    const cancel = edit && edit.querySelector('.r-cancel');
+    if (cancel) cancel.onclick = () => { edit.hidden = true; if (hasBlock) hasBlock.hidden = false; else if (write) write.hidden = false; };
+    const save = edit && edit.querySelector('.r-save');
+    if (save) save.onclick = async () => {
+      const ta = edit.querySelector('textarea');
+      const t = ta.value.trim();
+      if (!t) return toast('写点啥呗');
+      try {
+        await api('/api/feed/' + id + '/reaction', { method: 'POST', body: JSON.stringify({ text: t }) });
+        toast('吃后感收下了 😋');
+        refreshAll();
+      } catch (e) { toast(e.message); }
+    };
+    if (edit) edit.querySelectorAll('.r-q').forEach(q => {
+      q.onclick = () => { const ta = edit.querySelector('textarea'); ta.value = q.textContent; ta.focus(); };
+    });
   });
 }
 
@@ -987,7 +1095,7 @@ function flyAndEat(fd, member, meal) {
 
     const bubble = document.createElement('div');
     bubble.className = 'gulp-bubble';
-    bubble.textContent = meal.reaction;
+    bubble.textContent = meal.text || '开饭啦 🍽️';
     bubble.style.left = (to.x + 30) + 'px';
     bubble.style.top = (to.y - 44) + 'px';
     document.body.appendChild(bubble);

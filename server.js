@@ -16,7 +16,7 @@ const DATA_FILE = path.join(DATA_DIR, 'db.json');
 const UPLOAD_DIR = process.env.UPLOAD_DIR ? path.resolve(process.env.UPLOAD_DIR) : path.join(ROOT, 'uploads');
 const PUBLIC_DIR = path.join(ROOT, 'public');
 const PORT = process.env.PORT || 3789;
-const VERSION = '1.2.0';
+const VERSION = '1.3.0';
 
 fs.mkdirSync(DATA_DIR, { recursive: true });
 fs.mkdirSync(UPLOAD_DIR, { recursive: true });
@@ -52,6 +52,15 @@ if (Array.isArray(db.feeds)) {
   }
   if (healed > 0) { console.log(`[自愈] 修正 ${healed} 条 feeds 的 dateKey 为北京时间口径`); saveDb(); }
 }
+// 自愈：v1.2.x 的 reaction 是服务端随机话术字符串（非用户填写），全部作废为 null，接收方可随时回填吃后感
+if (Array.isArray(db.feeds)) {
+  const legacy = db.feeds.filter(f => f && f.reaction && typeof f.reaction === 'string');
+  if (legacy.length) {
+    legacy.forEach(f => { f.reaction = null; });
+    console.log(`[自愈] 清理 ${legacy.length} 条旧随机吃后感话术，等待接收方回填`);
+    saveDb();
+  }
+}
 
 const uid = p => p + '_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 const hash = s => crypto.createHash('sha256').update(s).digest('hex');
@@ -67,18 +76,6 @@ function genCode() {
 }
 
 const FOODS = ['gossip','kua','miss','rant','joke','photo','here','free'];
-const REACTIONS = {
-  gossip:  ['瓜很甜，籽有点多，细节不够！','吃瓜吃到饱！还有吗？','这瓜保熟，我信你！','瓜已下肚，人已精神'],
-  kua:     ['真香！甜到蛀牙了！','被甜到了，今天值了','这颗糖我存着慢慢含','夸得我脸都红了！'],
-  miss:    ['心里暖暖的，也想你了','被惦记的感觉真好','这封信我收下了','鼻子有点酸，但很开心'],
-  rant:    ['辣得直冒汗，但好爽！','苦是苦了点，但懂你','这是今天的饭，我干了','吐完好受多了，对吧？'],
-  joke:    ['好冷……（打了个哆嗦）','笑不出来，但嘴角动了','冷到我了，回你一个哈欠','好烂！再来一个！'],
-  photo:   ['哇，看起来真不错！','这张我保存了！','现烤的就是香','已端上桌，细细品尝'],
-  here:    ['看到你在那儿，放心了','云干杯！照顾好自己','下次带上我！','已定位，隔空击掌'],
-  free:    ['随口一说也好听','收下了，慢慢回味','那就聊五毛钱的','这句话我记小本本上了'],
-  praise:  ['真香！甜到蛀牙了！','被甜到了，今天值了','这颗糖我存着慢慢含','夸得我脸都红了！'], /* 老数据兜底 */
-};
-const pick = arr => arr[Math.floor(Math.random() * arr.length)];
 
 /* ---------- 工具 ---------- */
 const send = (res, code, obj) => {
@@ -282,7 +279,7 @@ const server = http.createServer(async (req, res) => {
         foodId,
         text: t,
         media: mediaUrl ? { type: 'image', url: mediaUrl } : null,
-        reaction: pick(REACTIONS[foodId] || REACTIONS.praise),
+        reaction: null, // 吃后感由接收方主动填写（v1.3.0 起不再由服务端随机生成）
         ts: Date.now(),
         dateKey: todayKey(Date.now()),
       };
@@ -327,6 +324,28 @@ const server = http.createServer(async (req, res) => {
         })
         .sort((a, b) => b.ts - a.ts);
       return send(res, 200, { feeds: list });
+    }
+
+    /* ---- 吃后感（仅接收方可写/改/删） ---- */
+    if (p.startsWith('/api/feed/') && p.endsWith('/reaction')) {
+      const id = p.slice('/api/feed/'.length, -'/reaction'.length);
+      const f = db.feeds.find(x => x.id === id);
+      if (!f) return send(res, 404, { error: '这道菜不在了' });
+      if (f.memberId !== me.id) return send(res, 403, { error: '吃后感要等 ta 本人来写哦' });
+      if (method === 'POST') {
+        const { text } = await readBody(req);
+        const t = (text || '').trim();
+        if (!t) return send(res, 400, { error: '写点啥呗' });
+        if (t.length > 200) return send(res, 400, { error: '吃后感最长 200 字哦' });
+        f.reaction = { text: t, by: me.id, byName: me.name, ts: Date.now() };
+        saveDb();
+        return send(res, 200, { ok: true, meal: f });
+      }
+      if (method === 'DELETE') {
+        f.reaction = null;
+        saveDb();
+        return send(res, 200, { ok: true, meal: f });
+      }
     }
 
     /* ---- 撤菜 ---- */
