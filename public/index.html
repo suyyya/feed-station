@@ -1374,7 +1374,10 @@ async function refreshTableOnly() {
       toast('🍽️ 收到投喂！快去饭桌看看');
     }
     S.tableFeeds = data.feeds;
-    if (S.tab === 'table') renderTable();
+    if (S.tab === 'table') {
+      // 饭桌上有正在展开的吃后感编辑区时，只更新数据不重渲染，避免轮询打断输入
+      if (!document.querySelector('.react-edit:not([hidden])')) renderTable();
+    }
   } catch (e) { /* 忽略轮询错误 */ }
 }
 setInterval(() => { if (S.token) refreshTableOnly(); }, 15000);
